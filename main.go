@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/qthang02/booking/factory"
 	"github.com/qthang02/booking/handlers"
 	"github.com/qthang02/booking/helper"
+	"github.com/qthang02/booking/services/factory"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )

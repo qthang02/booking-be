@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/qthang02/booking/factory"
+	"github.com/qthang02/booking/services/factory"
 	"net/http"
 )
 
