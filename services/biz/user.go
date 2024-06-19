@@ -40,3 +40,47 @@ func (biz *UserBiz) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// TODO: list user
+
+// TODO: get user
+
+// TODO: delete user
+
+// TODO: update user
+
+func (biz *UserBiz) Login(w http.ResponseWriter, r *http.Request) {
+	log.Log().Msg("UserBiz.Login request")
+	var login requset.LoginUserRequest
+
+	err := json.NewDecoder(r.Body).Decode(&login)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Error().Err(err).Msg("UserBiz.Login cannot decode request")
+		return
+	}
+
+	user, err := biz.userRepo.FindByUsername(login.Username)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.Login cannot find user")
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = helper.VerifyPassword(user.Password, login.Password)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.Login cannot verify password")
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	config, _ := helper.LoadConfig(".")
+
+	token, err := helper.GenerateToken(config.TokenExpiresIn, user.ID, config.TokenSecret)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.Login cannot generate token")
+		return
+	}
+
+	w.Write([]byte(token))
+}

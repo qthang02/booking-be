@@ -7,4 +7,5 @@ import (
 
 func InitUserHandler(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/user", factory.GetUserBiz().CreateUser)
+	mux.HandleFunc("POST /api/v1/user/login", factory.GetUserBiz().Login)
 }

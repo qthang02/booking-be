@@ -8,3 +8,8 @@ type CreateUserRequest struct {
 	UserType common.UserType `json:"user_type" binding:"required"`
 	Password string          `form:"password" binding:"required"`
 }
+
+type LoginUserRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
