@@ -26,6 +26,40 @@ func NewUserBiz(userRepo repo.IUserRepo, config *helper.Config) *UserBiz {
 	}
 }
 
+func (biz *UserBiz) RegisterUser(c echo.Context) error {
+	var req requset.RegisterUserRequest
+
+	if err := c.Bind(&req); err != nil {
+		log.Error().Err(err).Msg("UserBiz.RegisterUser failed to parse request body")
+		c.JSON(http.StatusBadRequest, "")
+		return err
+	}
+
+	var user enities.User
+	if err := copier.Copy(&user, &req); err != nil {
+		log.Error().Err(err).Msg("UserBiz.RegisterUser failed to copy request")
+		c.JSON(http.StatusInternalServerError, "")
+		return err
+	}
+
+	hashPassword, err := helper.HashPassword(user.Password)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.RegisterUser cannot hash password")
+		return err
+	}
+
+	user.Password = hashPassword
+
+	err = biz.userRepo.Save(&user)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.RegisterUser failed to save user")
+		c.JSON(http.StatusInternalServerError, "")
+		return err
+	}
+
+	return c.JSON(http.StatusOK, "")
+}
+
 func (biz *UserBiz) CreateUser(c echo.Context) error {
 	var user requset.CreateUserRequest
 

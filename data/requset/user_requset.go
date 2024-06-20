@@ -31,3 +31,9 @@ type UpdateUserRequest struct {
 	UserType common.UserType `json:"user_type"`
 	Password string          `json:"password"`
 }
+
+type RegisterUserRequest struct {
+	Username string `json:"username" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	Password string `form:"password" binding:"required"`
+}

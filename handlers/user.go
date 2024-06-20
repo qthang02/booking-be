@@ -6,6 +6,7 @@ import (
 )
 
 func InitUserHandler(server *echo.Echo) {
+	server.POST("/api/v1/user/register", factory.GetUserBiz().RegisterUser)
 	server.POST("/api/v1/user", factory.GetUserBiz().CreateUser)
 	server.GET("/api/v1/user/:id", factory.GetUserBiz().GetUserById)
 	server.POST("/api/v1/user/login", factory.GetUserBiz().Login)

@@ -18,6 +18,14 @@ func NewUserRepo(db *gorm.DB) IUserRepo {
 	return &UserRepo{db: db}
 }
 
+func (repo *UserRepo) Save(user *enities.User) error {
+	if err := repo.db.Create(user).Error; err != nil {
+		log.Error().Err(err).Msg("UserRepo.Save cannot save user")
+		return err
+	}
+	return nil
+}
+
 func (repo *UserRepo) CreateUser(req *requset.CreateUserRequest) error {
 	data := &enities.User{
 		Email:    req.Email,
