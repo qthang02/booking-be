@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"time"
@@ -14,8 +15,8 @@ type Config struct {
 	TokenMaxAge    int           `mapstructure:"TOKEN_MAXAGE"`
 }
 
-func LoadConfig(path string) (config Config, err error) {
-	log.Log().Msg("Loading config...")
+func LoadConfig(path string, logger zerolog.Logger) (config Config, err error) {
+	logger.Info().Timestamp().Msg("Loading config...")
 
 	viper.AddConfigPath(path)
 	viper.SetConfigFile(".env")

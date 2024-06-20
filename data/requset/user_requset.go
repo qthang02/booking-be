@@ -1,6 +1,9 @@
 package requset
 
-import "github.com/qthang02/booking/common"
+import (
+	"github.com/qthang02/booking/common"
+	"gorm.io/gorm"
+)
 
 type CreateUserRequest struct {
 	Username string          `json:"username" binding:"required"`
@@ -12,4 +15,19 @@ type CreateUserRequest struct {
 type LoginUserRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
+}
+
+type ListUsersRequest struct {
+}
+
+type GetUserRequest struct {
+	ID uint `json:"id" binding:"required"`
+}
+
+type UpdateUserRequest struct {
+	gorm.Model
+	Username string          `json:"username"`
+	Email    string          `json:"email"`
+	UserType common.UserType `json:"user_type"`
+	Password string          `json:"password"`
 }

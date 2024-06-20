@@ -1,35 +1,41 @@
 package biz
 
 import (
-	"encoding/json"
+	"github.com/jinzhu/copier"
+	"github.com/labstack/echo/v4"
 	"github.com/qthang02/booking/data/requset"
+	"github.com/qthang02/booking/data/response"
 	"github.com/qthang02/booking/helper"
 	"github.com/qthang02/booking/services/repo"
 	"github.com/rs/zerolog/log"
 	"net/http"
+	"strconv"
 )
 
 type UserBiz struct {
 	userRepo repo.IUserRepo
+	config   *helper.Config
 }
 
-func NewUserBiz(userRepo repo.IUserRepo) *UserBiz {
-	return &UserBiz{userRepo: userRepo}
+func NewUserBiz(userRepo repo.IUserRepo, config *helper.Config) *UserBiz {
+	return &UserBiz{
+		userRepo: userRepo,
+		config:   config,
+	}
 }
 
-func (biz *UserBiz) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (biz *UserBiz) CreateUser(c echo.Context) error {
 	var user requset.CreateUserRequest
 
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	if err := c.Bind(&user); err != nil {
+		log.Error().Err(err).Msg("UserBiz.CreateUser failed to bind create user request")
+		return err
 	}
 
 	hashPassword, err := helper.HashPassword(user.Password)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.CreateUser cannot hash password")
-		return
+		return err
 	}
 
 	user.Password = hashPassword
@@ -37,50 +43,77 @@ func (biz *UserBiz) CreateUser(w http.ResponseWriter, r *http.Request) {
 	err = biz.userRepo.CreateUser(&user)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.CreateUser cannot create user")
-		return
+		return err
 	}
+
+	return c.JSON(http.StatusCreated, user)
 }
 
-// TODO: list user
+func (biz *UserBiz) ListUsers(w http.ResponseWriter, r *http.Request) {
+}
 
-// TODO: get user
+func (biz *UserBiz) GetUserById(c echo.Context) error {
+	c.Logger().Info("UserBiz.GetUserById request")
+
+	id := c.Param("id")
+
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.GetUserById cannot convert id to int")
+		return err
+	}
+
+	user, err := biz.userRepo.FindByID(idInt)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.GetUserById cannot find user")
+		c.JSON(http.StatusBadRequest, "")
+		return err
+	}
+
+	res := response.UserDTOResponse{}
+	err = copier.Copy(&res, user)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.GetUserById cannot copy user")
+		c.JSON(http.StatusBadRequest, "")
+		return err
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
 
 // TODO: delete user
 
 // TODO: update user
 
-func (biz *UserBiz) Login(w http.ResponseWriter, r *http.Request) {
+func (biz *UserBiz) Login(c echo.Context) error {
 	log.Log().Msg("UserBiz.Login request")
 	var login requset.LoginUserRequest
 
-	err := json.NewDecoder(r.Body).Decode(&login)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Error().Err(err).Msg("UserBiz.Login cannot decode request")
-		return
+	if err := c.Bind(&login); err != nil {
+		log.Error().Err(err).Msg("UserBiz.Login failed to bind login request")
+		c.JSON(http.StatusBadRequest, "")
+		return err
 	}
 
 	user, err := biz.userRepo.FindByUsername(login.Username)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.Login cannot find user")
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		c.JSON(http.StatusBadRequest, "")
+		return err
 	}
 
 	err = helper.VerifyPassword(user.Password, login.Password)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.Login cannot verify password")
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
+		c.JSON(http.StatusUnauthorized, "Username or password is incorrect")
+		return err
 	}
 
-	config, _ := helper.LoadConfig(".")
-
-	token, err := helper.GenerateToken(config.TokenExpiresIn, user.ID, config.TokenSecret)
+	token, err := helper.GenerateToken(biz.config.TokenExpiresIn, user.ID, biz.config.TokenSecret)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.Login cannot generate token")
-		return
+		return err
 	}
 
-	w.Write([]byte(token))
+	return c.JSON(http.StatusOK, token)
 }

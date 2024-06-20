@@ -15,7 +15,7 @@ func Default(config helper.Config) {
 	db := helper.ConnectionDB(config)
 	userRepo = repo.NewUserRepo(db)
 
-	userBiz = biz.NewUserBiz(userRepo)
+	userBiz = biz.NewUserBiz(userRepo, &config)
 }
 
 func GetUserBiz() *biz.UserBiz {
