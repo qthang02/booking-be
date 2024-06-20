@@ -5,9 +5,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/qthang02/booking/data/requset"
 	"github.com/qthang02/booking/data/response"
+	"github.com/qthang02/booking/enities"
 	"github.com/qthang02/booking/helper"
 	"github.com/qthang02/booking/services/repo"
 	"github.com/rs/zerolog/log"
+	"github.com/samber/lo"
 	"net/http"
 	"strconv"
 )
@@ -49,7 +51,21 @@ func (biz *UserBiz) CreateUser(c echo.Context) error {
 	return c.JSON(http.StatusCreated, user)
 }
 
-func (biz *UserBiz) ListUsers(w http.ResponseWriter, r *http.Request) {
+func (biz *UserBiz) ListUsers(c echo.Context) error {
+	users, err := biz.userRepo.GetAllUsers()
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.ListUsers cannot get all users")
+		c.JSON(http.StatusBadRequest, "")
+		return err
+	}
+
+	res := lo.Map(users, func(item *enities.User, _ int) *response.UserDTOResponse {
+		var user response.UserDTOResponse
+		copier.Copy(&user, &item)
+		return &user
+	})
+
+	return c.JSON(http.StatusOK, res)
 }
 
 func (biz *UserBiz) GetUserById(c echo.Context) error {
@@ -81,9 +97,62 @@ func (biz *UserBiz) GetUserById(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// TODO: delete user
+func (biz *UserBiz) DeleteUserById(c echo.Context) error {
+	id := c.Param("id")
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.DeleteUserById cannot convert id to int")
+		c.JSON(http.StatusBadRequest, "")
+		return err
+	}
 
-// TODO: update user
+	err = biz.userRepo.DeleteUser(idInt)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.DeleteUserById cannot delete user")
+		c.JSON(http.StatusBadRequest, "")
+		return err
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+func (biz *UserBiz) UpdateUser(c echo.Context) error {
+	id := c.Param("id")
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.UpdateUser cannot convert id to int")
+		return err
+	}
+
+	var userUpdateRequest requset.UpdateUserRequest
+
+	if err := c.Bind(&userUpdateRequest); err != nil {
+		log.Error().Err(err).Msg("UserBiz.UpdateUser failed to bind update user request")
+		return err
+	}
+
+	// validate
+	user, err := biz.userRepo.FindByID(idInt)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.UpdateUser cannot find user")
+		c.JSON(http.StatusBadRequest, "")
+		return err
+	}
+
+	if user == nil {
+		log.Error().Err(err).Msg("UserBiz.UpdateUser cannot find user")
+		c.JSON(http.StatusBadRequest, "")
+		return err
+	}
+
+	err = biz.userRepo.UpdateUser(idInt, &userUpdateRequest)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.UpdateUser cannot update user")
+		return err
+	}
+
+	return c.JSON(http.StatusOK, "")
+}
 
 func (biz *UserBiz) Login(c echo.Context) error {
 	log.Log().Msg("UserBiz.Login request")
