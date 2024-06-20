@@ -71,15 +71,13 @@ func (biz *UserBiz) ListUsers(c echo.Context) error {
 func (biz *UserBiz) GetUserById(c echo.Context) error {
 	c.Logger().Info("UserBiz.GetUserById request")
 
-	id := c.Param("id")
-
-	idInt, err := strconv.Atoi(id)
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.GetUserById cannot convert id to int")
 		return err
 	}
 
-	user, err := biz.userRepo.FindByID(idInt)
+	user, err := biz.userRepo.FindByID(id)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.GetUserById cannot find user")
 		c.JSON(http.StatusBadRequest, "")
@@ -98,15 +96,14 @@ func (biz *UserBiz) GetUserById(c echo.Context) error {
 }
 
 func (biz *UserBiz) DeleteUserById(c echo.Context) error {
-	id := c.Param("id")
-	idInt, err := strconv.Atoi(id)
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.DeleteUserById cannot convert id to int")
 		c.JSON(http.StatusBadRequest, "")
 		return err
 	}
 
-	err = biz.userRepo.DeleteUser(idInt)
+	err = biz.userRepo.DeleteUser(id)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.DeleteUserById cannot delete user")
 		c.JSON(http.StatusBadRequest, "")
@@ -117,8 +114,7 @@ func (biz *UserBiz) DeleteUserById(c echo.Context) error {
 }
 
 func (biz *UserBiz) UpdateUser(c echo.Context) error {
-	id := c.Param("id")
-	idInt, err := strconv.Atoi(id)
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.UpdateUser cannot convert id to int")
 		return err
@@ -132,7 +128,7 @@ func (biz *UserBiz) UpdateUser(c echo.Context) error {
 	}
 
 	// validate
-	user, err := biz.userRepo.FindByID(idInt)
+	user, err := biz.userRepo.FindByID(id)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.UpdateUser cannot find user")
 		c.JSON(http.StatusBadRequest, "")
@@ -145,7 +141,7 @@ func (biz *UserBiz) UpdateUser(c echo.Context) error {
 		return err
 	}
 
-	err = biz.userRepo.UpdateUser(idInt, &userUpdateRequest)
+	err = biz.userRepo.UpdateUser(id, &userUpdateRequest)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.UpdateUser cannot update user")
 		return err
