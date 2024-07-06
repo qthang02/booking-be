@@ -1,16 +1,18 @@
 package enities
 
 import (
-	"github.com/qthang02/booking/common"
 	"gorm.io/gorm"
+	"time"
 )
 
 type User struct {
 	gorm.Model
-	Name     string          `json:"name"`
-	Username string          `json:"username"`
-	Email    string          `json:"email"`
-	UserType common.UserType `json:"user_type"`
-	Status   common.Status   `json:"status"`
-	Password string          `json:"password"`
+	Name     string     `json:"name"`
+	Username string     `json:"username"`
+	Email    string     `json:"email"`
+	Phone    string     `json:"phone"`
+	Birthday *time.Time `json:"birthday"`
+	Gender   bool       `json:"gender"`
+	Address  string     `json:"address"`
+	Password string     `json:"password"`
 }

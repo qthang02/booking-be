@@ -6,8 +6,8 @@ import (
 	"github.com/qthang02/booking/data/requset"
 	"github.com/qthang02/booking/data/response"
 	"github.com/qthang02/booking/enities"
-	"github.com/qthang02/booking/helper"
-	"github.com/qthang02/booking/services/repo"
+	"github.com/qthang02/booking/services/user/repo"
+	"github.com/qthang02/booking/util"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"net/http"
@@ -16,48 +16,14 @@ import (
 
 type UserBiz struct {
 	userRepo repo.IUserRepo
-	config   *helper.Config
+	config   *util.Config
 }
 
-func NewUserBiz(userRepo repo.IUserRepo, config *helper.Config) *UserBiz {
+func NewUserBiz(userRepo repo.IUserRepo, config *util.Config) *UserBiz {
 	return &UserBiz{
 		userRepo: userRepo,
 		config:   config,
 	}
-}
-
-func (biz *UserBiz) RegisterUser(c echo.Context) error {
-	var req requset.RegisterUserRequest
-
-	if err := c.Bind(&req); err != nil {
-		log.Error().Err(err).Msg("UserBiz.RegisterUser failed to parse request body")
-		c.JSON(http.StatusBadRequest, "")
-		return err
-	}
-
-	var user enities.User
-	if err := copier.Copy(&user, &req); err != nil {
-		log.Error().Err(err).Msg("UserBiz.RegisterUser failed to copy request")
-		c.JSON(http.StatusInternalServerError, "")
-		return err
-	}
-
-	hashPassword, err := helper.HashPassword(user.Password)
-	if err != nil {
-		log.Error().Err(err).Msg("UserBiz.RegisterUser cannot hash password")
-		return err
-	}
-
-	user.Password = hashPassword
-
-	err = biz.userRepo.Save(&user)
-	if err != nil {
-		log.Error().Err(err).Msg("UserBiz.RegisterUser failed to save user")
-		c.JSON(http.StatusInternalServerError, "")
-		return err
-	}
-
-	return c.JSON(http.StatusOK, "")
 }
 
 func (biz *UserBiz) CreateUser(c echo.Context) error {
@@ -68,7 +34,7 @@ func (biz *UserBiz) CreateUser(c echo.Context) error {
 		return err
 	}
 
-	hashPassword, err := helper.HashPassword(user.Password)
+	hashPassword, err := util.HashPassword(user.Password)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.CreateUser cannot hash password")
 		return err
@@ -182,37 +148,4 @@ func (biz *UserBiz) UpdateUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, "")
-}
-
-func (biz *UserBiz) Login(c echo.Context) error {
-	log.Log().Msg("UserBiz.Login request")
-	var login requset.LoginUserRequest
-
-	if err := c.Bind(&login); err != nil {
-		log.Error().Err(err).Msg("UserBiz.Login failed to bind login request")
-		c.JSON(http.StatusBadRequest, "")
-		return err
-	}
-
-	user, err := biz.userRepo.FindByUsername(login.Username)
-	if err != nil {
-		log.Error().Err(err).Msg("UserBiz.Login cannot find user")
-		c.JSON(http.StatusBadRequest, "")
-		return err
-	}
-
-	err = helper.VerifyPassword(user.Password, login.Password)
-	if err != nil {
-		log.Error().Err(err).Msg("UserBiz.Login cannot verify password")
-		c.JSON(http.StatusUnauthorized, "Username or password is incorrect")
-		return err
-	}
-
-	token, err := helper.GenerateToken(biz.config.TokenExpiresIn, user.ID, biz.config.TokenSecret)
-	if err != nil {
-		log.Error().Err(err).Msg("UserBiz.Login cannot generate token")
-		return err
-	}
-
-	return c.JSON(http.StatusOK, token)
 }

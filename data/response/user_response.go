@@ -1,15 +1,15 @@
 package response
 
 import (
-	"github.com/qthang02/booking/common"
-	"gorm.io/gorm"
+	"time"
 )
 
 type UserDTOResponse struct {
-	gorm.Model
-	Username string          `json:"username"`
-	Email    string          `json:"email"`
-	Name     string          `json:"name"`
-	UserType common.UserType `json:"user_type"`
-	Status   common.Status   `json:"status"`
+	Username string     `json:"username"`
+	Email    string     `json:"email"`
+	Name     string     `json:"name"`
+	Phone    string     `json:"phone"`
+	Birthday *time.Time `json:"birthday"`
+	Gender   bool       `json:"gender"`
+	Address  string     `json:"address"`
 }

@@ -8,7 +8,7 @@ import (
 type IUserRepo interface {
 	Save(user *enities.User) error
 	CreateUser(req *requset.CreateUserRequest) error
-	FindByUsername(username string) (*enities.User, error)
+	FindByEmail(email string) (*enities.User, error)
 	FindByID(id int) (*enities.User, error)
 	UpdateUser(id int, req *requset.UpdateUserRequest) error
 	DeleteUser(id int) error

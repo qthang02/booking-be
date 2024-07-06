@@ -1,19 +1,22 @@
 package requset
 
 import (
-	"github.com/qthang02/booking/common"
 	"gorm.io/gorm"
+	"time"
 )
 
 type CreateUserRequest struct {
-	Username string          `json:"username" binding:"required"`
-	Email    string          `json:"email" binding:"required"`
-	UserType common.UserType `json:"user_type" binding:"required"`
-	Password string          `form:"password" binding:"required"`
+	Username string     `json:"username" binding:"required"`
+	Email    string     `json:"email" binding:"required"`
+	Phone    string     `json:"phone"`
+	Birthday *time.Time `json:"birthday"`
+	Gender   bool       `json:"gender"`
+	Address  string     `json:"address"`
+	Password string     `form:"password" binding:"required"`
 }
 
 type LoginUserRequest struct {
-	Username string `json:"username" binding:"required"`
+	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -26,10 +29,13 @@ type GetUserRequest struct {
 
 type UpdateUserRequest struct {
 	gorm.Model
-	Username string          `json:"username"`
-	Email    string          `json:"email"`
-	UserType common.UserType `json:"user_type"`
-	Password string          `json:"password"`
+	Username string     `json:"username"`
+	Email    string     `json:"email"`
+	Phone    string     `json:"phone"`
+	Birthday *time.Time `json:"birthday"`
+	Gender   bool       `json:"gender"`
+	Address  string     `json:"address"`
+	Password string     `json:"password"`
 }
 
 type RegisterUserRequest struct {

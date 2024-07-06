@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"fmt"
 	"github.com/jinzhu/copier"
 	"github.com/qthang02/booking/data/requset"
 	"github.com/qthang02/booking/enities"
@@ -27,11 +28,12 @@ func (repo *UserRepo) Save(user *enities.User) error {
 }
 
 func (repo *UserRepo) CreateUser(req *requset.CreateUserRequest) error {
-	data := &enities.User{
-		Email:    req.Email,
-		Username: req.Username,
-		Password: req.Password,
-		UserType: req.UserType,
+	var data *enities.User
+
+	err := copier.Copy(data, req)
+	if err != nil {
+		log.Error().Err(err).Msg(fmt.Sprintf("UserRepo.CreateUser copier.Copy failed err: %s with req: %s", err, req))
+		return err
 	}
 
 	resp := repo.db.Create(data)
@@ -39,12 +41,12 @@ func (repo *UserRepo) CreateUser(req *requset.CreateUserRequest) error {
 	return resp.Error
 }
 
-func (repo *UserRepo) FindByUsername(username string) (*enities.User, error) {
+func (repo *UserRepo) FindByEmail(email string) (*enities.User, error) {
 	var user enities.User
 
-	err := repo.db.Where("username = ?", username).First(&user).Error
+	err := repo.db.Where("email = ?", email).First(&user).Error
 	if err != nil {
-		log.Error().Err(err).Msg("UserRepo.FindByUsername User not found")
+		log.Error().Err(err).Msg("UserRepo.FindByEmail User not found")
 		return &enities.User{}, err
 	}
 	return &user, nil
