@@ -10,3 +10,11 @@ const (
 	SEPARATELY
 	DELUXE
 )
+
+type RoomStatus int
+
+const (
+	Ready RoomStatus = iota
+	Occupied
+	DueOut
+)
