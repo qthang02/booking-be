@@ -1,4 +1,4 @@
-package repo
+package userrepo
 
 import (
 	"github.com/qthang02/booking/data/requset"

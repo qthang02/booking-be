@@ -12,11 +12,11 @@ import (
 )
 
 type AuthenBiz struct {
-	userRepo repo.IUserRepo
+	userRepo userrepo.IUserRepo
 	config   *util.Config
 }
 
-func NewAuthenBiz(userRepo repo.IUserRepo, config *util.Config) *AuthenBiz {
+func NewAuthenBiz(userRepo userrepo.IUserRepo, config *util.Config) *AuthenBiz {
 	return &AuthenBiz{
 		userRepo: userRepo,
 		config:   config,

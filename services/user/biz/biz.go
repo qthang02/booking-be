@@ -1,4 +1,4 @@
-package biz
+package userbiz
 
 import (
 	"github.com/jinzhu/copier"
@@ -15,11 +15,11 @@ import (
 )
 
 type UserBiz struct {
-	userRepo repo.IUserRepo
+	userRepo userrepo.IUserRepo
 	config   *util.Config
 }
 
-func NewUserBiz(userRepo repo.IUserRepo, config *util.Config) *UserBiz {
+func NewUserBiz(userRepo userrepo.IUserRepo, config *util.Config) *UserBiz {
 	return &UserBiz{
 		userRepo: userRepo,
 		config:   config,
