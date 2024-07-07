@@ -1,10 +1,12 @@
 package response
 
 import (
+	"gorm.io/gorm"
 	"time"
 )
 
 type UserDTOResponse struct {
+	gorm.Model
 	Username string     `json:"username"`
 	Email    string     `json:"email"`
 	Name     string     `json:"name"`

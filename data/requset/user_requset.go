@@ -15,11 +15,6 @@ type CreateUserRequest struct {
 	Password string     `form:"password" binding:"required"`
 }
 
-type LoginUserRequest struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
 type ListUsersRequest struct {
 }
 
@@ -36,10 +31,4 @@ type UpdateUserRequest struct {
 	Gender   bool       `json:"gender"`
 	Address  string     `json:"address"`
 	Password string     `json:"password"`
-}
-
-type RegisterUserRequest struct {
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"required"`
-	Password string `form:"password" binding:"required"`
 }
