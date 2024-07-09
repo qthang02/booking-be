@@ -7,7 +7,7 @@ import (
 
 type Room struct {
 	gorm.Model
-	RoomName   uint64           `json:"room_name"`
+	RoomNumber uint64           `json:"room_number"`
 	Status     types.RoomStatus `json:"status"`
 	CategoryId uint             `json:"category_id"`
 }

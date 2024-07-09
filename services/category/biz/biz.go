@@ -39,7 +39,7 @@ func (biz *CategoryBiz) List(c echo.Context) error {
 	categories, err := biz.repo.ListCategories(c.Request().Context(), &paging)
 	if err != nil {
 		log.Error().Msgf("CategoryBiz.List cannot list catogories error: %v with requset: %v", err, c.Request())
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	resp := response.ListCategoriesResponse{
@@ -64,7 +64,7 @@ func (biz *CategoryBiz) Create(c echo.Context) error {
 	err = biz.repo.CreateCategory(c.Request().Context(), &req)
 	if err != nil {
 		log.Error().Msgf("CategoryBiz.Create cannot create category error: %v with requset: %v", err, req)
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(http.StatusCreated, "Create Category Successfully")
@@ -89,7 +89,7 @@ func (biz *CategoryBiz) Update(c echo.Context) error {
 	category, err := biz.repo.GetCategory(c.Request().Context(), id)
 	if err != nil {
 		log.Error().Msgf("CategoryBiz.Update cannot get category error: %v, with id: %d", err, id)
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	if category == nil {
@@ -99,10 +99,10 @@ func (biz *CategoryBiz) Update(c echo.Context) error {
 	err = biz.repo.UpdateCategory(c.Request().Context(), id, &req)
 	if err != nil {
 		log.Error().Msgf("CategoryBiz.Update cannot update category error: %v with requset: %v", err, req)
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.JSON(http.StatusCreated, "Update Category Successfully")
+	return c.JSON(http.StatusOK, "Update Category Successfully")
 }
 
 func (biz *CategoryBiz) Get(c echo.Context) error {
@@ -117,7 +117,7 @@ func (biz *CategoryBiz) Get(c echo.Context) error {
 	category, err := biz.repo.GetCategory(c.Request().Context(), id)
 	if err != nil {
 		log.Error().Msgf("CategoryBiz.Get cannot get category error: %v with id: %d", err, id)
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	if category == nil {
@@ -139,7 +139,7 @@ func (biz *CategoryBiz) Delete(c echo.Context) error {
 	category, err := biz.repo.GetCategory(c.Request().Context(), id)
 	if err != nil {
 		log.Error().Msgf("CategoryBiz.Delete cannot get category error: %v with id: %d", err, id)
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	if category == nil {
@@ -149,8 +149,8 @@ func (biz *CategoryBiz) Delete(c echo.Context) error {
 	err = biz.repo.DeleteCategory(c.Request().Context(), id)
 	if err != nil {
 		log.Error().Msgf("CategoryBiz.Delete cannot delete category error: %v with id: %d", err, id)
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.JSON(http.StatusCreated, "Delete Category Successfully")
+	return c.JSON(http.StatusOK, "Delete Category Successfully")
 }

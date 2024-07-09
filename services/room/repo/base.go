@@ -10,6 +10,6 @@ type IRoomRepo interface {
 	ListRooms(ctx context.Context, paging *requset.Paging) ([]*enities.Room, error)
 	GetRoom(ctx context.Context, id int) (*enities.Room, error)
 	CreateRoom(ctx context.Context, request *requset.CreateRoomRequest) error
-	UpdateRoom(ctx context.Context, request *requset.UpdateRoomRequest) error
+	UpdateRoom(ctx context.Context, id int, request *requset.UpdateRoomRequest) error
 	DeleteRoom(ctx context.Context, id int) error
 }

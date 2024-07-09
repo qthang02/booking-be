@@ -78,10 +78,17 @@ func (repo *RoomRepo) CreateRoom(_ context.Context, request *requset.CreateRoomR
 	return nil
 }
 
-func (repo *RoomRepo) UpdateRoom(_ context.Context, request *requset.UpdateRoomRequest) error {
+func (repo *RoomRepo) UpdateRoom(_ context.Context, id int, request *requset.UpdateRoomRequest) error {
 	log.Info().Msgf("RoomRepo.UpdateRoom update room request: %v", request)
 
-	err := repo.db.Save(request).Error
+	var room enities.Room
+	err := copier.Copy(&room, request)
+	if err != nil {
+		log.Error().Msgf("RoomRepo.UpdateRoom cannot copy request error: %v", err)
+		return err
+	}
+
+	err = repo.db.Where("id = ?", id).Updates(&room).Error
 	if err != nil {
 		log.Error().Msgf("RoomRepo.UpdateRoom update room error: %v", err)
 		return err

@@ -36,6 +36,15 @@ func setupHttpRoutes(server *echo.Echo) {
 			category.PUT("/:id", services.GetCategoryBiz().Update)
 			category.DELETE("/:id", services.GetCategoryBiz().Delete)
 		}
+
+		room := api.Group("/room")
+		{
+			room.GET("/:id", services.GetRoomBiz().Get)
+			room.GET("", services.GetRoomBiz().List)
+			room.POST("", services.GetRoomBiz().Create)
+			room.PUT("/:id", services.GetRoomBiz().Update)
+			room.DELETE("/:id", services.GetRoomBiz().Delete)
+		}
 	}
 }
 
