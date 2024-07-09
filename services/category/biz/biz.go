@@ -2,7 +2,7 @@ package categotybiz
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/qthang02/booking/data/requset"
+	"github.com/qthang02/booking/data/request"
 	"github.com/qthang02/booking/data/response"
 	categoryrepo "github.com/qthang02/booking/services/category/repo"
 	"github.com/qthang02/booking/util"
@@ -26,7 +26,7 @@ func NewCategoryBiz(repo categoryrepo.ICategoryRepo, config *util.Config) *Categ
 func (biz *CategoryBiz) List(c echo.Context) error {
 	log.Info().Msgf("CategoryBiz.List list categories requset ")
 
-	var paging requset.Paging
+	var paging request.Paging
 
 	err := c.Bind(&paging)
 	if err != nil {
@@ -53,7 +53,7 @@ func (biz *CategoryBiz) List(c echo.Context) error {
 func (biz *CategoryBiz) Create(c echo.Context) error {
 	log.Info().Msgf("CategoryBiz.Create create category requset ")
 
-	var req requset.CreateCategoryRequest
+	var req request.CreateCategoryRequest
 
 	err := c.Bind(&req)
 	if err != nil {
@@ -79,7 +79,7 @@ func (biz *CategoryBiz) Update(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	var req requset.UpdateCategoryRequest
+	var req request.UpdateCategoryRequest
 	err = c.Bind(&req)
 	if err != nil {
 		log.Error().Msgf("CategoryBiz.Update failed to parse request body err: %v, with requset: %v", err, req)

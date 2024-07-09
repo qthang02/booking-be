@@ -3,7 +3,6 @@ package userbiz
 import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
-	"github.com/qthang02/booking/data/requset"
 	"github.com/qthang02/booking/data/response"
 	"github.com/qthang02/booking/enities"
 	"github.com/qthang02/booking/services/user/repo"
@@ -27,7 +26,7 @@ func NewUserBiz(userRepo userrepo.IUserRepo, config *util.Config) *UserBiz {
 }
 
 func (biz *UserBiz) CreateUser(c echo.Context) error {
-	var user requset.CreateUserRequest
+	var user request.CreateUserRequest
 
 	if err := c.Bind(&user); err != nil {
 		log.Error().Err(err).Msg("UserBiz.CreateUser failed to bind create user request")
@@ -124,7 +123,7 @@ func (biz *UserBiz) UpdateUser(c echo.Context) error {
 		return err
 	}
 
-	var userUpdateRequest requset.UpdateUserRequest
+	var userUpdateRequest request.UpdateUserRequest
 
 	if err := c.Bind(&userUpdateRequest); err != nil {
 		log.Error().Err(err).Msg("UserBiz.UpdateUser failed to bind update user request")

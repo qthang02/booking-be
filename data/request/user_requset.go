@@ -1,4 +1,4 @@
-package requset
+package request
 
 import (
 	"gorm.io/gorm"

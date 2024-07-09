@@ -3,7 +3,6 @@ package userrepo
 import (
 	"context"
 	"github.com/jinzhu/copier"
-	"github.com/qthang02/booking/data/requset"
 	"github.com/qthang02/booking/enities"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
@@ -31,7 +30,7 @@ func (repo *UserRepo) Save(_ context.Context, user *enities.User) error {
 	return nil
 }
 
-func (repo *UserRepo) CreateUser(_ context.Context, req *requset.CreateUserRequest) error {
+func (repo *UserRepo) CreateUser(_ context.Context, req *request.CreateUserRequest) error {
 	var data *enities.User
 
 	err := copier.Copy(data, req)
@@ -68,7 +67,7 @@ func (repo *UserRepo) FindByID(_ context.Context, id int) (*enities.User, error)
 	return &user, nil
 }
 
-func (repo *UserRepo) UpdateUser(_ context.Context, id int, req *requset.UpdateUserRequest) error {
+func (repo *UserRepo) UpdateUser(_ context.Context, id int, req *request.UpdateUserRequest) error {
 
 	var user enities.User
 

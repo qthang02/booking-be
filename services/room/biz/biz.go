@@ -2,7 +2,7 @@ package roombiz
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/qthang02/booking/data/requset"
+	"github.com/qthang02/booking/data/request"
 	"github.com/qthang02/booking/data/response"
 	roomrepo "github.com/qthang02/booking/services/room/repo"
 	"github.com/qthang02/booking/util"
@@ -48,7 +48,7 @@ func (biz *RoomBiz) Get(c echo.Context) error {
 func (biz *RoomBiz) List(c echo.Context) error {
 	log.Info().Msgf("RoomBiz.List get room request")
 
-	var paging requset.Paging
+	var paging request.Paging
 	if err := c.Bind(&paging); err != nil {
 		log.Error().Msgf("RoomBiz.List room request error: %v, with requset: %v", err, paging)
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -79,7 +79,7 @@ func (biz *RoomBiz) Update(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	var req requset.UpdateRoomRequest
+	var req request.UpdateRoomRequest
 	if err := c.Bind(&req); err != nil {
 		log.Error().Msgf("RoomBiz.Update room request error: %v, with request: %v", err, req)
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -135,7 +135,7 @@ func (biz *RoomBiz) Delete(c echo.Context) error {
 func (biz *RoomBiz) Create(c echo.Context) error {
 	log.Info().Msgf("RoomBiz.Create create room request")
 
-	var req requset.CreateRoomRequest
+	var req request.CreateRoomRequest
 
 	if err := c.Bind(&req); err != nil {
 		log.Error().Msgf("RoomBiz.Create room request error: %v, with request: %v", err, req)

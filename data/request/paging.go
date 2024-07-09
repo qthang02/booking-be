@@ -1,4 +1,4 @@
-package requset
+package request
 
 type Paging struct {
 	Page  int   `json:"page"`

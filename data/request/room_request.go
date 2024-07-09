@@ -1,4 +1,4 @@
-package requset
+package request
 
 import "github.com/qthang02/booking/types"
 

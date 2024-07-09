@@ -3,7 +3,7 @@ package biz
 import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
-	"github.com/qthang02/booking/data/requset"
+	"github.com/qthang02/booking/data/request"
 	"github.com/qthang02/booking/enities"
 	"github.com/qthang02/booking/services/user/repo"
 	"github.com/qthang02/booking/util"
@@ -24,7 +24,7 @@ func NewAuthenBiz(userRepo userrepo.IUserRepo, config *util.Config) *AuthenBiz {
 }
 
 func (biz *AuthenBiz) RegisterUser(c echo.Context) error {
-	var req requset.RegisterUserRequest
+	var req request.RegisterUserRequest
 
 	if err := c.Bind(&req); err != nil {
 		log.Error().Err(err).Msg("AuthenBiz.RegisterUser failed to parse request body")
@@ -59,7 +59,7 @@ func (biz *AuthenBiz) RegisterUser(c echo.Context) error {
 
 func (biz *AuthenBiz) Login(c echo.Context) error {
 	log.Log().Msg("AuthenBiz.Login request")
-	var login requset.LoginUserRequest
+	var login request.LoginUserRequest
 
 	if err := c.Bind(&login); err != nil {
 		log.Error().Err(err).Msg("AuthenBiz.Login failed to bind login request")

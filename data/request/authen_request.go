@@ -1,4 +1,4 @@
-package requset
+package request
 
 type LoginUserRequest struct {
 	Email    string `json:"email" binding:"required"`

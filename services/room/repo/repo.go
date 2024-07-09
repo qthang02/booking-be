@@ -3,7 +3,7 @@ package roomrepo
 import (
 	"context"
 	"github.com/jinzhu/copier"
-	"github.com/qthang02/booking/data/requset"
+	"github.com/qthang02/booking/data/request"
 	"github.com/qthang02/booking/enities"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
@@ -24,7 +24,7 @@ func NewRoomRepo(db *gorm.DB) IRoomRepo {
 	}
 }
 
-func (repo *RoomRepo) ListRooms(_ context.Context, paging *requset.Paging) ([]*enities.Room, error) {
+func (repo *RoomRepo) ListRooms(_ context.Context, paging *request.Paging) ([]*enities.Room, error) {
 	log.Info().Msgf("RoomRepo.ListRooms Listing rooms with paging: %v", paging)
 
 	var rooms []*enities.Room
@@ -59,7 +59,7 @@ func (repo *RoomRepo) GetRoom(_ context.Context, id int) (*enities.Room, error) 
 	return &room, nil
 }
 
-func (repo *RoomRepo) CreateRoom(_ context.Context, request *requset.CreateRoomRequest) error {
+func (repo *RoomRepo) CreateRoom(_ context.Context, request *request.CreateRoomRequest) error {
 	log.Info().Msgf("RoomRepo.CreateRoom create room request: %v", request)
 
 	room := enities.Room{}
@@ -78,7 +78,7 @@ func (repo *RoomRepo) CreateRoom(_ context.Context, request *requset.CreateRoomR
 	return nil
 }
 
-func (repo *RoomRepo) UpdateRoom(_ context.Context, id int, request *requset.UpdateRoomRequest) error {
+func (repo *RoomRepo) UpdateRoom(_ context.Context, id int, request *request.UpdateRoomRequest) error {
 	log.Info().Msgf("RoomRepo.UpdateRoom update room request: %v", request)
 
 	var room enities.Room

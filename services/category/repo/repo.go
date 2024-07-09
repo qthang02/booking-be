@@ -3,7 +3,7 @@ package categoryrepo
 import (
 	"context"
 	"github.com/jinzhu/copier"
-	"github.com/qthang02/booking/data/requset"
+	"github.com/qthang02/booking/data/request"
 	"github.com/qthang02/booking/enities"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
@@ -25,7 +25,7 @@ func NewCategoryRepo(db *gorm.DB) ICategoryRepo {
 	}
 }
 
-func (repo *CategoryRepo) ListCategories(_ context.Context, paging *requset.Paging) ([]*enities.Category, error) {
+func (repo *CategoryRepo) ListCategories(_ context.Context, paging *request.Paging) ([]*enities.Category, error) {
 	log.Info().Msgf("CategoryRepo.ListCategories Listing categories with paging: %v", paging)
 
 	var categories []*enities.Category
@@ -71,7 +71,7 @@ func (repo *CategoryRepo) DeleteCategory(_ context.Context, id int) error {
 	return nil
 }
 
-func (repo *CategoryRepo) CreateCategory(_ context.Context, request *requset.CreateCategoryRequest) error {
+func (repo *CategoryRepo) CreateCategory(_ context.Context, request *request.CreateCategoryRequest) error {
 	log.Info().Msgf("CategoryRepo.CreateCategory Create category request: %v", request)
 
 	category := enities.Category{}
@@ -90,7 +90,7 @@ func (repo *CategoryRepo) CreateCategory(_ context.Context, request *requset.Cre
 	return nil
 }
 
-func (repo *CategoryRepo) UpdateCategory(_ context.Context, id int, request *requset.UpdateCategoryRequest) error {
+func (repo *CategoryRepo) UpdateCategory(_ context.Context, id int, request *request.UpdateCategoryRequest) error {
 	log.Info().Msgf("CategoryRepo.UpdateCategory Update category request: %v", request)
 	category := enities.Category{}
 	err := copier.Copy(&category, request)
