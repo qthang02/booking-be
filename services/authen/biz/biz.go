@@ -28,14 +28,14 @@ func (biz *AuthenBiz) RegisterUser(c echo.Context) error {
 
 	if err := c.Bind(&req); err != nil {
 		log.Error().Err(err).Msg("AuthenBiz.RegisterUser failed to parse request body")
-		c.JSON(http.StatusBadRequest, "")
+		_ = c.JSON(http.StatusBadRequest, "")
 		return err
 	}
 
 	var user enities.User
 	if err := copier.Copy(&user, &req); err != nil {
 		log.Error().Err(err).Msg("AuthenBiz.RegisterUser failed to copy request")
-		c.JSON(http.StatusInternalServerError, "")
+		_ = c.JSON(http.StatusInternalServerError, "")
 		return err
 	}
 
@@ -47,10 +47,10 @@ func (biz *AuthenBiz) RegisterUser(c echo.Context) error {
 
 	user.Password = hashPassword
 
-	err = biz.userRepo.Save(&user)
+	err = biz.userRepo.Save(c.Request().Context(), &user)
 	if err != nil {
 		log.Error().Err(err).Msg("AuthenBiz.RegisterUser failed to save user")
-		c.JSON(http.StatusInternalServerError, "")
+		_ = c.JSON(http.StatusInternalServerError, "")
 		return err
 	}
 
@@ -63,21 +63,21 @@ func (biz *AuthenBiz) Login(c echo.Context) error {
 
 	if err := c.Bind(&login); err != nil {
 		log.Error().Err(err).Msg("AuthenBiz.Login failed to bind login request")
-		c.JSON(http.StatusBadRequest, "")
+		_ = c.JSON(http.StatusBadRequest, "")
 		return err
 	}
 
-	user, err := biz.userRepo.FindByEmail(login.Email)
+	user, err := biz.userRepo.FindByEmail(c.Request().Context(), login.Email)
 	if err != nil {
 		log.Error().Err(err).Msg("AuthenBiz.Login cannot find user")
-		c.JSON(http.StatusBadRequest, "")
+		_ = c.JSON(http.StatusBadRequest, "")
 		return err
 	}
 
 	err = util.VerifyPassword(user.Password, login.Password)
 	if err != nil {
 		log.Error().Err(err).Msg("AuthenBiz.Login cannot verify password")
-		c.JSON(http.StatusUnauthorized, "Username or password is incorrect")
+		_ = c.JSON(http.StatusUnauthorized, "Username or password is incorrect")
 		return err
 	}
 
