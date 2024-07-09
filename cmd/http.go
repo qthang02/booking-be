@@ -17,16 +17,24 @@ func setupHttpRoutes(server *echo.Echo) {
 		{
 			user.GET("/:id", services.GetUserBiz().GetUserById)
 			user.PUT("/:id", services.GetUserBiz().UpdateUser)
-			user.GET("/users", services.GetUserBiz().ListUsers)
+			user.GET("", services.GetUserBiz().ListUsers)
 			user.DELETE("/:id", services.GetUserBiz().DeleteUserById)
-			user.POST("/user", services.GetUserBiz().CreateUser)
-
+			user.POST("", services.GetUserBiz().CreateUser)
 		}
 
 		auth := api.Group("/auth")
 		{
 			auth.POST("/register", services.GetAuthenBiz().RegisterUser)
 			auth.POST("/login", services.GetAuthenBiz().Login)
+		}
+
+		category := api.Group("/category")
+		{
+			category.GET("/:id", services.GetCategoryBiz().Get)
+			category.GET("", services.GetCategoryBiz().List)
+			category.POST("", services.GetCategoryBiz().Create)
+			category.PUT("/:id", services.GetCategoryBiz().Update)
+			category.DELETE("/:id", services.GetCategoryBiz().Delete)
 		}
 	}
 }

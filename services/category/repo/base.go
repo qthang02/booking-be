@@ -11,5 +11,5 @@ type ICategoryRepo interface {
 	GetCategory(ctx context.Context, id int) (*enities.Category, error)
 	DeleteCategory(ctx context.Context, id int) error
 	CreateCategory(ctx context.Context, request *requset.CreateCategoryRequest) error
-	UpdateCategory(ctx context.Context, request requset.UpdateCategoryRequest) error
+	UpdateCategory(ctx context.Context, id int, request *requset.UpdateCategoryRequest) error
 }

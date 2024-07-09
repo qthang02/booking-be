@@ -51,7 +51,7 @@ func (repo *CategoryRepo) GetCategory(_ context.Context, id int) (*enities.Categ
 
 	var category enities.Category
 
-	err := repo.db.First(&category, id).Error
+	err := repo.db.Where("id = ?", id).First(&category).Error
 	if err != nil {
 		log.Error().Msgf("CategoryRepo.GetCategory cannot find category with id: %v", id)
 		return nil, err
@@ -90,7 +90,7 @@ func (repo *CategoryRepo) CreateCategory(_ context.Context, request *requset.Cre
 	return nil
 }
 
-func (repo *CategoryRepo) UpdateCategory(_ context.Context, request requset.UpdateCategoryRequest) error {
+func (repo *CategoryRepo) UpdateCategory(_ context.Context, id int, request *requset.UpdateCategoryRequest) error {
 	log.Info().Msgf("CategoryRepo.UpdateCategory Update category request: %v", request)
 	category := enities.Category{}
 	err := copier.Copy(&category, request)
@@ -99,7 +99,7 @@ func (repo *CategoryRepo) UpdateCategory(_ context.Context, request requset.Upda
 		return err
 	}
 
-	err = repo.db.Save(&category).Error
+	err = repo.db.Where(id).Updates(&category).Error
 	if err != nil {
 		log.Error().Msgf("CategoryRepo.UpdateCategory cannot update category with id: %v", category.ID)
 		return err
