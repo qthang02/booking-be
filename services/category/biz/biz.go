@@ -42,6 +42,10 @@ func (biz *CategoryBiz) List(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	for _, category := range categories {
+		category.AvailableRooms = int64(len(category.Rooms))
+	}
+
 	resp := response.ListCategoriesResponse{
 		Categories: categories,
 		Paging:     &paging,
@@ -123,6 +127,8 @@ func (biz *CategoryBiz) Get(c echo.Context) error {
 	if category == nil {
 		return echo.NewHTTPError(http.StatusNotFound, "Category not found")
 	}
+
+	category.AvailableRooms = int64(len(category.Rooms))
 
 	return c.JSON(http.StatusOK, category)
 }

@@ -11,7 +11,7 @@ type Category struct {
 	Description    string             `json:"description"`
 	ImageLink      string             `json:"image_link"`
 	Price          float64            `json:"price"`
-	AvailableRooms uint64             `json:"available_rooms"`
+	AvailableRooms int64              `json:"available_rooms" gorm:"-"`
 	Type           types.CategoryType `json:"type"`
 	Rooms          []Room             `json:"rooms" gorm:"foreignKey:CategoryId"`
 }

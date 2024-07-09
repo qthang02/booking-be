@@ -33,9 +33,16 @@ func (repo *CategoryRepo) ListCategories(_ context.Context, paging *request.Pagi
 	err := repo.db.Find(&categories).Count(&paging.Total).Error
 	if err != nil {
 		log.Error().Msgf("CategoryRepo.ListCategories cannot counting result err: %v", err)
+		return nil, err
 	}
 
 	repo.db = repo.db.Offset((paging.Page - 1) * paging.Limit)
+
+	err = repo.db.Preload("Rooms").First(&categories).Error
+	if err != nil {
+		log.Error().Msgf("CategoryRepo.ListCategories cannot find result err: %v", err)
+		return nil, err
+	}
 
 	err = repo.db.Order("id desc").Find(&categories).Limit(paging.Limit).Error
 	if err != nil {
@@ -51,9 +58,15 @@ func (repo *CategoryRepo) GetCategory(_ context.Context, id int) (*enities.Categ
 
 	var category enities.Category
 
-	err := repo.db.Where("id = ?", id).First(&category).Error
+	err := repo.db.Where("id = ?", id).Preload("Rooms").First(&category).Error
 	if err != nil {
-		log.Error().Msgf("CategoryRepo.GetCategory cannot find category with id: %v", id)
+		log.Error().Msgf("CategoryRepo.GetCategory cannot find category err: %v with id: %v", err, id)
+		return nil, err
+	}
+
+	err = repo.db.Find(&category.Rooms).Count(&category.AvailableRooms).Error
+	if err != nil {
+		log.Error().Msgf("CategoryRepo.GetCategory cannot count rooms in category err: %v with id: %v", err, id)
 		return nil, err
 	}
 
@@ -64,7 +77,7 @@ func (repo *CategoryRepo) DeleteCategory(_ context.Context, id int) error {
 	log.Info().Msgf("CategoryRepo.DeleteCategory Delete category with id: %v", id)
 	err := repo.db.Delete(&enities.Category{}, "id = ?", id).Error
 	if err != nil {
-		log.Error().Msgf("CategoryRepo.DeleteCategory cannot delete category with id: %v", id)
+		log.Error().Msgf("CategoryRepo.DeleteCategory cannot delete category err: %v with id: %v", err, id)
 		return err
 	}
 
@@ -83,7 +96,7 @@ func (repo *CategoryRepo) CreateCategory(_ context.Context, request *request.Cre
 
 	err = repo.db.Create(&category).Error
 	if err != nil {
-		log.Error().Msgf("CategoryRepo.CreateCategory cannot create category with id: %v", category.ID)
+		log.Error().Msgf("CategoryRepo.CreateCategory cannot create category err: %v with id: %v", err, category.ID)
 		return err
 	}
 
@@ -101,7 +114,7 @@ func (repo *CategoryRepo) UpdateCategory(_ context.Context, id int, request *req
 
 	err = repo.db.Where(id).Updates(&category).Error
 	if err != nil {
-		log.Error().Msgf("CategoryRepo.UpdateCategory cannot update category with id: %v", category.ID)
+		log.Error().Msgf("CategoryRepo.UpdateCategory cannot update category err: %v with id: %v", err, category.ID)
 		return err
 	}
 
