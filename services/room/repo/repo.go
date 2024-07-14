@@ -18,7 +18,7 @@ type RoomRepo struct {
 	db *gorm.DB
 }
 
-func NewRoomRepo(db *gorm.DB) IRoomRepo {
+func NewRoomRepo(db *gorm.DB) *RoomRepo {
 	roomRepo = &RoomRepo{}
 
 	err := db.AutoMigrate(&enities.Room{})
@@ -68,8 +68,6 @@ func (repo *RoomRepo) Save(_ context.Context, room *enities.Room) error {
 }
 
 func (repo *RoomRepo) ListRooms(_ context.Context, paging *request.Paging) ([]*enities.Room, error) {
-	log.Info().Msgf("RoomRepo.ListRooms Listing rooms with paging: %v", paging)
-
 	var rooms []*enities.Room
 
 	err := repo.db.Find(&rooms).Count(&paging.Total).Error
@@ -93,7 +91,7 @@ func (repo *RoomRepo) GetRoom(_ context.Context, id int) (*enities.Room, error) 
 	log.Info().Msgf("RoomRepo.GetRoom get room request: %v", id)
 
 	var room enities.Room
-	err := repo.db.First(&room, id).Error
+	err := repo.db.Raw("select * from rooms where id = ?", id).Scan(&room).Error
 	if err != nil {
 		log.Error().Msgf("RoomRepo.GetRoom find room error: %v", err)
 		return nil, err

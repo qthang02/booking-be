@@ -4,6 +4,7 @@ import (
 	authen "github.com/qthang02/booking/services/authen/biz"
 	categotybiz "github.com/qthang02/booking/services/category/biz"
 	categoryrepo "github.com/qthang02/booking/services/category/repo"
+	"github.com/qthang02/booking/services/order/biz"
 	orderrepo "github.com/qthang02/booking/services/order/repo"
 	roombiz "github.com/qthang02/booking/services/room/biz"
 	"github.com/qthang02/booking/services/room/repo"
@@ -21,6 +22,7 @@ var (
 	authenBiz    *authen.AuthenBiz
 	categoryBiz  *categotybiz.CategoryBiz
 	roomBiz      *roombiz.RoomBiz
+	orderBiz     *orderbiz.OrderBiz
 )
 
 func Default(config util.Config) {
@@ -36,6 +38,7 @@ func Default(config util.Config) {
 	authenBiz = authen.NewAuthenBiz(userRepo, &config)
 	categoryBiz = categotybiz.NewCategoryBiz(categoryRepo, &config)
 	roomBiz = roombiz.NewRoomBiz(roomRepo, &config)
+	orderBiz = orderbiz.NewOrderBiz(orderRepo, &config)
 }
 
 func GetUserBiz() *user.UserBiz {
@@ -52,4 +55,8 @@ func GetCategoryBiz() *categotybiz.CategoryBiz {
 
 func GetRoomBiz() *roombiz.RoomBiz {
 	return roomBiz
+}
+
+func GetOrderBiz() *orderbiz.OrderBiz {
+	return orderBiz
 }

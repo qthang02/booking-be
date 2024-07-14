@@ -40,10 +40,15 @@ func setupHttpRoutes(server *echo.Echo) {
 		room := api.Group("/room")
 		{
 			room.GET("/:id", services.GetRoomBiz().Get)
-			room.GET("", services.GetRoomBiz().List)
-			room.POST("", services.GetRoomBiz().Create)
-			room.PUT("/:id", services.GetRoomBiz().Update)
-			room.DELETE("/:id", services.GetRoomBiz().Delete)
+			//room.GET("", services.GetRoomBiz().List)
+			//room.POST("", services.GetRoomBiz().Create)
+			//room.PUT("/:id", services.GetRoomBiz().Update)
+			//room.DELETE("/:id", services.GetRoomBiz().Delete)
+		}
+
+		order := api.Group("/order")
+		{
+			order.GET("/:id", services.GetOrderBiz().Get)
 		}
 	}
 }

@@ -72,8 +72,6 @@ func (repo *CategoryRepo) Save(_ context.Context, category *enities.Category) er
 }
 
 func (repo *CategoryRepo) ListCategories(_ context.Context, paging *request.Paging) ([]*enities.Category, error) {
-	log.Info().Msgf("CategoryRepo.ListCategories Listing categories with paging: %v", paging)
-
 	var categories []*enities.Category
 
 	err := repo.db.Find(&categories).Count(&paging.Total).Error
@@ -97,18 +95,23 @@ func (repo *CategoryRepo) GetCategory(_ context.Context, id int) (*enities.Categ
 	log.Info().Msgf("CategoryRepo.GetCategory Getting category with id: %v", id)
 
 	var category enities.Category
+	var rooms []enities.Room
 
-	err := repo.db.Where("id = ?", id).Preload("Rooms").First(&category).Error
+	query := "SELECT * FROM categories WHERE id = ?"
+	err := repo.db.Raw(query, id).Scan(&category).Error
 	if err != nil {
 		log.Error().Msgf("CategoryRepo.GetCategory cannot find category err: %v with id: %v", err, id)
 		return nil, err
 	}
 
-	err = repo.db.Find(&category.Rooms).Count(&category.AvailableRooms).Error
+	query = "SELECT * FROM rooms WHERE category_id = ?"
+	err = repo.db.Raw(query, id).Scan(&rooms).Error
 	if err != nil {
-		log.Error().Msgf("CategoryRepo.GetCategory cannot count rooms in category err: %v with id: %v", err, id)
+		log.Error().Msgf("CategoryRepo.GetCategory cannot preload rooms err: %v with category_id: %v", err, id)
 		return nil, err
 	}
+
+	category.Rooms = rooms
 
 	return &category, nil
 }

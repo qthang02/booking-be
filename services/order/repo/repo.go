@@ -67,7 +67,7 @@ func (repo *OrderRepo) SaveOrder(_ context.Context, order *enities.Order) error 
 	return err
 }
 
-func (repo *OrderRepo) FindOrder(_ context.Context, id string) (*enities.Order, error) {
+func (repo *OrderRepo) FindOrder(_ context.Context, id int) (*enities.Order, error) {
 	order := &enities.Order{}
 	err := repo.db.Where("id = ?", id).First(order).Error
 	if err != nil {
