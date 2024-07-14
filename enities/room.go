@@ -7,7 +7,8 @@ import (
 
 type Room struct {
 	gorm.Model
-	RoomNumber uint64           `json:"room_number"`
+	RoomNumber uint64           `json:"roomNumber" gorm:"uniqueIndex"`
 	Status     types.RoomStatus `json:"status"`
-	CategoryId uint             `json:"category_id"`
+	CategoryId uint             `json:"categoryId" gorm:"CategoryId"`
+	Order      Order            `json:"order" gorm:"foreignKey:RoomNumber;references:RoomNumber"`
 }

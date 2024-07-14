@@ -4,9 +4,15 @@ import (
 	"context"
 	"github.com/jinzhu/copier"
 	"github.com/qthang02/booking/data/request"
+	"github.com/qthang02/booking/database"
 	"github.com/qthang02/booking/enities"
+	"github.com/qthang02/booking/util"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
+)
+
+var (
+	userRepo *UserRepo
 )
 
 type UserRepo struct {
@@ -14,17 +20,52 @@ type UserRepo struct {
 }
 
 func NewUserRepo(db *gorm.DB) IUserRepo {
+	userRepo = &UserRepo{}
+
 	err := db.AutoMigrate(&enities.User{})
 	if err != nil {
 		log.Error().Msgf("failed to auto migrate user database")
 		return nil
 	}
 
-	return &UserRepo{db: db}
+	userRepo.db = db
+
+	err = userRepo.initUserDB()
+	if err != nil {
+		log.Error().Msgf("failed to init user database")
+		return nil
+	}
+
+	return userRepo
+}
+
+func (repo *UserRepo) initUserDB() error {
+	users, err := repo.ListUsers(context.Background())
+	if err != nil {
+		log.Error().Msgf("initUserDB: failed to list users")
+		return err
+	}
+
+	if len(users) == 0 {
+		for _, user := range database.InitUsersDataDefault() {
+			user.Password, err = util.HashPassword(user.Password)
+			if err != nil {
+				log.Error().Msgf("initUserDB: failed to hash password")
+				return err
+			}
+			err := repo.Save(context.Background(), user)
+			if err != nil {
+				log.Error().Msgf("initUserDB: failed to save user")
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (repo *UserRepo) Save(_ context.Context, user *enities.User) error {
-	if err := repo.db.Create(user).Error; err != nil {
+	if err := repo.db.Save(user).Error; err != nil {
 		log.Error().Err(err).Msg("UserRepo.Save cannot save user")
 		return err
 	}

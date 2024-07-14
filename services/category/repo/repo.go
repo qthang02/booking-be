@@ -4,9 +4,14 @@ import (
 	"context"
 	"github.com/jinzhu/copier"
 	"github.com/qthang02/booking/data/request"
+	"github.com/qthang02/booking/database"
 	"github.com/qthang02/booking/enities"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
+)
+
+var (
+	categoryRepo *CategoryRepo
 )
 
 type CategoryRepo struct {
@@ -14,15 +19,56 @@ type CategoryRepo struct {
 }
 
 func NewCategoryRepo(db *gorm.DB) ICategoryRepo {
+	categoryRepo = &CategoryRepo{}
+
 	err := db.AutoMigrate(&enities.Category{})
 	if err != nil {
-		log.Error().Msgf("Error migrating category repo: %v", err)
+		log.Error().Msgf("NewCategoryRepo: Error migrating category repo: %v", err)
 		return nil
 	}
 
-	return &CategoryRepo{
-		db: db,
+	categoryRepo.db = db
+
+	err = categoryRepo.initCategoryDB()
+	if err != nil {
+		log.Error().Msgf("NewCategoryRepo: Error migrating category repo: %v", err)
+		return nil
 	}
+
+	return categoryRepo
+}
+
+func (repo *CategoryRepo) initCategoryDB() error {
+	categories, err := repo.ListCategories(context.Background(), &request.Paging{
+		Limit: 10,
+		Page:  1,
+	})
+	if err != nil {
+		log.Error().Msgf("initCategoryDB: Error listing categories: %v", err)
+		return err
+	}
+
+	if len(categories) == 0 {
+		for _, category := range database.InitCategoriesDataDefault() {
+			err := repo.Save(context.Background(), category)
+			if err != nil {
+				log.Error().Msgf("initCategoryDB: Error saving category: %v", err)
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (repo *CategoryRepo) Save(_ context.Context, category *enities.Category) error {
+	err := repo.db.Save(category).Error
+	if err != nil {
+		log.Error().Msgf("CategoryRepo.Save: Error saving category: %v", err)
+		return err
+	}
+
+	return nil
 }
 
 func (repo *CategoryRepo) ListCategories(_ context.Context, paging *request.Paging) ([]*enities.Category, error) {
@@ -37,12 +83,6 @@ func (repo *CategoryRepo) ListCategories(_ context.Context, paging *request.Pagi
 	}
 
 	repo.db = repo.db.Offset((paging.Page - 1) * paging.Limit)
-
-	err = repo.db.Preload("Rooms").First(&categories).Error
-	if err != nil {
-		log.Error().Msgf("CategoryRepo.ListCategories cannot find result err: %v", err)
-		return nil, err
-	}
 
 	err = repo.db.Order("id desc").Find(&categories).Limit(paging.Limit).Error
 	if err != nil {

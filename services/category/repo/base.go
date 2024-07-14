@@ -7,6 +7,7 @@ import (
 )
 
 type ICategoryRepo interface {
+	Save(ctx context.Context, category *enities.Category) error
 	ListCategories(ctx context.Context, paging *request.Paging) ([]*enities.Category, error)
 	GetCategory(ctx context.Context, id int) (*enities.Category, error)
 	DeleteCategory(ctx context.Context, id int) error

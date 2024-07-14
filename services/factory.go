@@ -4,6 +4,7 @@ import (
 	authen "github.com/qthang02/booking/services/authen/biz"
 	categotybiz "github.com/qthang02/booking/services/category/biz"
 	categoryrepo "github.com/qthang02/booking/services/category/repo"
+	orderrepo "github.com/qthang02/booking/services/order/repo"
 	roombiz "github.com/qthang02/booking/services/room/biz"
 	"github.com/qthang02/booking/services/room/repo"
 	user "github.com/qthang02/booking/services/user/biz"
@@ -15,6 +16,7 @@ var (
 	userRepo     userrepo.IUserRepo
 	roomRepo     roomrepo.IRoomRepo
 	categoryRepo categoryrepo.ICategoryRepo
+	orderRepo    orderrepo.IOrderRepo
 	userBiz      *user.UserBiz
 	authenBiz    *authen.AuthenBiz
 	categoryBiz  *categotybiz.CategoryBiz
@@ -25,8 +27,9 @@ func Default(config util.Config) {
 	// repo
 	db := util.ConnectionDB(config)
 	userRepo = userrepo.NewUserRepo(db)
-	roomRepo = roomrepo.NewRoomRepo(db)
 	categoryRepo = categoryrepo.NewCategoryRepo(db)
+	roomRepo = roomrepo.NewRoomRepo(db)
+	orderRepo = orderrepo.NewOrderRepo(db)
 
 	// biz
 	userBiz = user.NewUserBiz(userRepo, &config)

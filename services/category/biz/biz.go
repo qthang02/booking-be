@@ -43,7 +43,12 @@ func (biz *CategoryBiz) List(c echo.Context) error {
 	}
 
 	for _, category := range categories {
-		category.AvailableRooms = int64(len(category.Rooms))
+		resp, err := biz.repo.GetCategory(c.Request().Context(), int(category.ID))
+		if err != nil {
+			log.Error().Msgf("CategoryBiz.List cannot get catogory error: %v with requset: %v", err, c.Request())
+			return err
+		}
+		category.AvailableRooms = int64(len(resp.Rooms))
 	}
 
 	resp := response.ListCategoriesResponse{

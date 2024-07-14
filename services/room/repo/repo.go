@@ -4,9 +4,14 @@ import (
 	"context"
 	"github.com/jinzhu/copier"
 	"github.com/qthang02/booking/data/request"
+	"github.com/qthang02/booking/database"
 	"github.com/qthang02/booking/enities"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
+)
+
+var (
+	roomRepo *RoomRepo
 )
 
 type RoomRepo struct {
@@ -14,14 +19,52 @@ type RoomRepo struct {
 }
 
 func NewRoomRepo(db *gorm.DB) IRoomRepo {
+	roomRepo = &RoomRepo{}
+
 	err := db.AutoMigrate(&enities.Room{})
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to auto migrate room database")
+		log.Fatal().Err(err).Msg("NewRoomRepo: failed to auto migrate room database")
 		return nil
 	}
-	return &RoomRepo{
-		db: db,
+
+	roomRepo.db = db
+
+	err = roomRepo.initRoomDB()
+	if err != nil {
+		log.Fatal().Err(err).Msg("NewRoomRepo: failed to init room database")
+		return nil
 	}
+
+	return roomRepo
+}
+
+func (repo *RoomRepo) initRoomDB() error {
+	rooms, err := repo.ListRooms(context.Background(), &request.Paging{})
+	if err != nil {
+		log.Fatal().Err(err).Msg("initRoomDB: failed to list rooms")
+		return err
+	}
+
+	if len(rooms) == 0 {
+		for _, room := range database.InitRoomsDataDefault() {
+			err := repo.Save(context.Background(), room)
+			if err != nil {
+				log.Fatal().Err(err).Msg("initRoomDB: failed to save room")
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (repo *RoomRepo) Save(_ context.Context, room *enities.Room) error {
+	err := repo.db.Save(room).Error
+	if err != nil {
+		log.Error().Err(err).Msg("RoomRepo.Save: failed to save room")
+	}
+
+	return err
 }
 
 func (repo *RoomRepo) ListRooms(_ context.Context, paging *request.Paging) ([]*enities.Room, error) {
