@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/qthang02/booking/services"
@@ -73,5 +74,6 @@ func Run() {
 	services.Default(config)
 	setupHttpRoutes(server)
 
-	server.Logger.Fatal(server.Start(config.ServerAddress))
+	PORT := os.Getenv("SERVER_PORT")
+	server.Logger.Fatal(server.Start(fmt.Sprintf(":%s", PORT)))
 }
