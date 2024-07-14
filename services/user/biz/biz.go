@@ -1,9 +1,9 @@
-package biz
+package userbiz
 
 import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
-	"github.com/qthang02/booking/data/requset"
+	"github.com/qthang02/booking/data/request"
 	"github.com/qthang02/booking/data/response"
 	"github.com/qthang02/booking/enities"
 	"github.com/qthang02/booking/services/user/repo"
@@ -15,11 +15,11 @@ import (
 )
 
 type UserBiz struct {
-	userRepo repo.IUserRepo
+	userRepo userrepo.IUserRepo
 	config   *util.Config
 }
 
-func NewUserBiz(userRepo repo.IUserRepo, config *util.Config) *UserBiz {
+func NewUserBiz(userRepo userrepo.IUserRepo, config *util.Config) *UserBiz {
 	return &UserBiz{
 		userRepo: userRepo,
 		config:   config,
@@ -27,7 +27,7 @@ func NewUserBiz(userRepo repo.IUserRepo, config *util.Config) *UserBiz {
 }
 
 func (biz *UserBiz) CreateUser(c echo.Context) error {
-	var user requset.CreateUserRequest
+	var user request.CreateUserRequest
 
 	if err := c.Bind(&user); err != nil {
 		log.Error().Err(err).Msg("UserBiz.CreateUser failed to bind create user request")
@@ -42,7 +42,7 @@ func (biz *UserBiz) CreateUser(c echo.Context) error {
 
 	user.Password = hashPassword
 
-	err = biz.userRepo.CreateUser(&user)
+	err = biz.userRepo.CreateUser(c.Request().Context(), &user)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.CreateUser cannot create user")
 		return err
@@ -52,16 +52,20 @@ func (biz *UserBiz) CreateUser(c echo.Context) error {
 }
 
 func (biz *UserBiz) ListUsers(c echo.Context) error {
-	users, err := biz.userRepo.GetAllUsers()
+	users, err := biz.userRepo.ListUsers(c.Request().Context())
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.ListUsers cannot get all users")
-		c.JSON(http.StatusBadRequest, "")
+		_ = c.JSON(http.StatusBadRequest, "")
 		return err
 	}
 
 	res := lo.Map(users, func(item *enities.User, _ int) *response.UserDTOResponse {
 		var user response.UserDTOResponse
-		copier.Copy(&user, &item)
+		err := copier.Copy(&user, &item)
+		if err != nil {
+			log.Error().Err(err).Msgf("UserBiz.ListUsers cannot copy user err: %s", err)
+			return nil
+		}
 		return &user
 	})
 
@@ -77,10 +81,10 @@ func (biz *UserBiz) GetUserById(c echo.Context) error {
 		return err
 	}
 
-	user, err := biz.userRepo.FindByID(id)
+	user, err := biz.userRepo.FindByID(c.Request().Context(), id)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.GetUserById cannot find user")
-		c.JSON(http.StatusBadRequest, "")
+		_ = c.JSON(http.StatusBadRequest, "")
 		return err
 	}
 
@@ -88,7 +92,7 @@ func (biz *UserBiz) GetUserById(c echo.Context) error {
 	err = copier.Copy(&res, user)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.GetUserById cannot copy user")
-		c.JSON(http.StatusBadRequest, "")
+		_ = c.JSON(http.StatusBadRequest, "")
 		return err
 	}
 
@@ -99,14 +103,14 @@ func (biz *UserBiz) DeleteUserById(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.DeleteUserById cannot convert id to int")
-		c.JSON(http.StatusBadRequest, "")
+		_ = c.JSON(http.StatusBadRequest, "")
 		return err
 	}
 
-	err = biz.userRepo.DeleteUser(id)
+	err = biz.userRepo.DeleteUser(c.Request().Context(), id)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.DeleteUserById cannot delete user")
-		c.JSON(http.StatusBadRequest, "")
+		_ = c.JSON(http.StatusBadRequest, "")
 		return err
 	}
 
@@ -120,7 +124,7 @@ func (biz *UserBiz) UpdateUser(c echo.Context) error {
 		return err
 	}
 
-	var userUpdateRequest requset.UpdateUserRequest
+	var userUpdateRequest request.UpdateUserRequest
 
 	if err := c.Bind(&userUpdateRequest); err != nil {
 		log.Error().Err(err).Msg("UserBiz.UpdateUser failed to bind update user request")
@@ -128,20 +132,20 @@ func (biz *UserBiz) UpdateUser(c echo.Context) error {
 	}
 
 	// validate
-	user, err := biz.userRepo.FindByID(id)
+	user, err := biz.userRepo.FindByID(c.Request().Context(), id)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.UpdateUser cannot find user")
-		c.JSON(http.StatusBadRequest, "")
+		_ = c.JSON(http.StatusBadRequest, "")
 		return err
 	}
 
 	if user == nil {
 		log.Error().Err(err).Msg("UserBiz.UpdateUser cannot find user")
-		c.JSON(http.StatusBadRequest, "")
+		_ = c.JSON(http.StatusBadRequest, "")
 		return err
 	}
 
-	err = biz.userRepo.UpdateUser(id, &userUpdateRequest)
+	err = biz.userRepo.UpdateUser(c.Request().Context(), id, &userUpdateRequest)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.UpdateUser cannot update user")
 		return err

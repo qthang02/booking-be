@@ -15,4 +15,5 @@ type User struct {
 	Gender   bool       `json:"gender"`
 	Address  string     `json:"address"`
 	Password string     `json:"password"`
+	Orders   []Order    `json:"orders" gorm:"foreignKey:UserID"`
 }
