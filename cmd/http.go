@@ -6,6 +6,7 @@ import (
 	"github.com/qthang02/booking/services"
 	"github.com/qthang02/booking/util"
 	"github.com/rs/zerolog"
+	"net/http"
 	"os"
 )
 
@@ -13,6 +14,10 @@ func setupHttpRoutes(server *echo.Echo) {
 
 	api := server.Group("/api/v1")
 	{
+		api.GET("/health", func(c echo.Context) error {
+			return c.JSON(http.StatusOK, "I'm still alive")
+		})
+
 		user := api.Group("/user")
 		{
 			user.GET("/:id", services.GetUserBiz().GetUserById)
@@ -40,10 +45,10 @@ func setupHttpRoutes(server *echo.Echo) {
 		room := api.Group("/room")
 		{
 			room.GET("/:id", services.GetRoomBiz().Get)
-			//room.GET("", services.GetRoomBiz().List)
-			//room.POST("", services.GetRoomBiz().Create)
-			//room.PUT("/:id", services.GetRoomBiz().Update)
-			//room.DELETE("/:id", services.GetRoomBiz().Delete)
+			room.GET("", services.GetRoomBiz().List)
+			room.POST("", services.GetRoomBiz().Create)
+			room.PUT("/:id", services.GetRoomBiz().Update)
+			room.DELETE("/:id", services.GetRoomBiz().Delete)
 		}
 
 		order := api.Group("/order")
