@@ -13,5 +13,5 @@ type IUserRepo interface {
 	FindByID(ctx context.Context, id int) (*enities.User, error)
 	UpdateUser(ctx context.Context, id int, req *request.UpdateUserRequest) error
 	DeleteUser(ctx context.Context, id int) error
-	ListUsers(ctx context.Context) ([]*enities.User, error)
+	ListUsers(ctx context.Context, paging *request.Paging) ([]*enities.User, error)
 }

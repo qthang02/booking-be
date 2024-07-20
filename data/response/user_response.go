@@ -1,17 +1,19 @@
 package response
 
 import (
-	"gorm.io/gorm"
 	"time"
 )
 
 type UserDTOResponse struct {
-	gorm.Model
-	Username string     `json:"username"`
-	Email    string     `json:"email"`
-	Name     string     `json:"name"`
-	Phone    string     `json:"phone"`
-	Birthday *time.Time `json:"birthday"`
-	Gender   bool       `json:"gender"`
-	Address  string     `json:"address"`
+	ID        uint              `json:"id"`
+	Name      string            `json:"name"`
+	Username  string            `json:"username"`
+	Email     string            `json:"email"`
+	Phone     string            `json:"phone"`
+	Birthday  *time.Time        `json:"birthday,omitempty"`
+	Gender    bool              `json:"gender"`
+	Address   string            `json:"address"`
+	CreatedAt time.Time         `json:"created_at"`
+	UpdatedAt time.Time         `json:"updated_at"`
+	Orders    []OrderSummaryDTO `json:"orders,omitempty"`
 }

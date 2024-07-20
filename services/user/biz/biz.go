@@ -5,11 +5,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/qthang02/booking/data/request"
 	"github.com/qthang02/booking/data/response"
-	"github.com/qthang02/booking/enities"
 	"github.com/qthang02/booking/services/user/repo"
 	"github.com/qthang02/booking/util"
 	"github.com/rs/zerolog/log"
-	"github.com/samber/lo"
 	"net/http"
 	"strconv"
 )
@@ -52,24 +50,37 @@ func (biz *UserBiz) CreateUser(c echo.Context) error {
 }
 
 func (biz *UserBiz) ListUsers(c echo.Context) error {
-	users, err := biz.userRepo.ListUsers(c.Request().Context())
-	if err != nil {
-		log.Error().Err(err).Msg("UserBiz.ListUsers cannot get all users")
-		_ = c.JSON(http.StatusBadRequest, "")
-		return err
+	ctx := c.Request().Context()
+	paging := &request.Paging{}
+
+	if page, err := strconv.Atoi(c.QueryParam("page")); err == nil {
+		paging.Page = page
+	}
+	if limit, err := strconv.Atoi(c.QueryParam("limit")); err == nil {
+		paging.Limit = limit
 	}
 
-	res := lo.Map(users, func(item *enities.User, _ int) *response.UserDTOResponse {
-		var user response.UserDTOResponse
-		err := copier.Copy(&user, &item)
-		if err != nil {
-			log.Error().Err(err).Msgf("UserBiz.ListUsers cannot copy user err: %s", err)
-			return nil
-		}
-		return &user
-	})
+	paging.Process()
 
-	return c.JSON(http.StatusOK, res)
+	users, err := biz.userRepo.ListUsers(ctx, paging)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.ListUsers: cannot get users")
+		return c.JSON(http.StatusInternalServerError, "Failed to retrieve users")
+	}
+
+	var userDTOs response.UserDTOResponse
+	err = copier.Copy(&userDTOs, &users)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.ListUsers: cannot copy users")
+		return c.JSON(http.StatusInternalServerError, "Failed to copy users")
+	}
+
+	resp := response.PaginatedResponse{
+		Data:   userDTOs,
+		Paging: paging,
+	}
+
+	return c.JSON(http.StatusOK, resp)
 }
 
 func (biz *UserBiz) GetUserById(c echo.Context) error {
