@@ -115,17 +115,17 @@ func (biz *CategoryBiz) Update(c echo.Context) error {
 }
 
 func (biz *CategoryBiz) Get(c echo.Context) error {
-	log.Info().Msgf("CategoryBiz.Get get category requset ")
+	log.Info().Msgf("CategoryBiz.GetOrder get category requset ")
 
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		log.Error().Msgf("CategoryBiz.Get invalid category id error: %v", err)
+		log.Error().Msgf("CategoryBiz.GetOrder invalid category id error: %v", err)
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	category, err := biz.repo.GetCategory(c.Request().Context(), id)
 	if err != nil {
-		log.Error().Msgf("CategoryBiz.Get cannot get category error: %v with id: %d", err, id)
+		log.Error().Msgf("CategoryBiz.GetOrder cannot get category error: %v with id: %d", err, id)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 

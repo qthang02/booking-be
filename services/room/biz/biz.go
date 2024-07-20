@@ -24,17 +24,17 @@ func NewRoomBiz(repo roomrepo.IRoomRepo, config *util.Config) *RoomBiz {
 }
 
 func (biz *RoomBiz) Get(c echo.Context) error {
-	log.Info().Msgf("RoomBiz.Get get room request")
+	log.Info().Msgf("RoomBiz.GetOrder get room request")
 
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		log.Error().Msgf("RoomBiz.Get room id error: %v, with id: %d", err, id)
+		log.Error().Msgf("RoomBiz.GetOrder room id error: %v, with id: %d", err, id)
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	room, err := biz.repo.GetRoom(c.Request().Context(), id)
 	if err != nil {
-		log.Error().Msgf("RoomBiz.Get room error: %v, with id: %d", err, id)
+		log.Error().Msgf("RoomBiz.GetOrder room error: %v, with id: %d", err, id)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 

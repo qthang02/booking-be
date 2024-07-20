@@ -54,7 +54,11 @@ func setupHttpRoutes(server *echo.Echo) {
 
 		order := api.Group("/order")
 		{
-			order.GET("/:id", services.GetOrderBiz().Get)
+			order.GET("/:id", services.GetOrderBiz().GetOrder)
+			order.GET("", services.GetOrderBiz().ListOrders)
+			order.POST("", services.GetOrderBiz().CreateOrder)
+			order.PUT("/:id", services.GetOrderBiz().UpdateOrder)
+			order.DELETE("/:id", services.GetOrderBiz().DeleteOrder)
 		}
 	}
 }
@@ -63,8 +67,8 @@ func Run() {
 	server := echo.New()
 	server.Use(middleware.CORS())
 	server.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"https://localhost:5173"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 	}))
 	logger := zerolog.New(os.Stdout)
 	config, err := util.LoadConfig(".", logger)
@@ -74,6 +78,6 @@ func Run() {
 	services.Default(config)
 	setupHttpRoutes(server)
 
-	PORT := os.Getenv("SERVER_PORT")
+	PORT := "8080"
 	server.Logger.Fatal(server.Start(fmt.Sprintf(":%s", PORT)))
 }

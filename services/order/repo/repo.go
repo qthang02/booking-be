@@ -2,6 +2,7 @@ package orderrepo
 
 import (
 	"context"
+	"github.com/qthang02/booking/data/request"
 	"github.com/qthang02/booking/database"
 	"github.com/qthang02/booking/enities"
 	"github.com/qthang02/booking/util"
@@ -39,7 +40,7 @@ func NewOrderRepo(db *gorm.DB) *OrderRepo {
 }
 
 func (repo *OrderRepo) initOrderDB() error {
-	orders, err := repo.ListOrders(context.Background())
+	orders, err := repo.ListOrders(context.Background(), &request.Paging{})
 	if err != nil {
 		log.Error().Msgf("OrderRepo: failed to list orders: %v", err)
 		return err
@@ -77,14 +78,31 @@ func (repo *OrderRepo) FindOrder(_ context.Context, id int) (*enities.Order, err
 	return order, err
 }
 
-func (repo *OrderRepo) ListOrders(_ context.Context) ([]enities.Order, error) {
-	var orders []enities.Order
-	err := repo.db.Find(&orders).Error
-	if err != nil {
-		log.Error().Msgf("FindOrders: failed to find orders: %v", err)
+func (repo *OrderRepo) ListOrders(ctx context.Context, paging *request.Paging) ([]*enities.Order, error) {
+	var orders []*enities.Order
+
+	paging.Process()
+
+	offset := (paging.Page - 1) * paging.Limit
+
+	result := repo.db.WithContext(ctx).
+		Limit(paging.Limit).
+		Offset(offset).
+		Find(orders)
+
+	if result.Error != nil {
+		log.Error().Err(result.Error).Msg("ListOrders: failed to find orders")
+		return nil, result.Error
 	}
 
-	return orders, err
+	var totalCount int64
+	if err := repo.db.Model(&enities.Order{}).Count(&totalCount).Error; err != nil {
+		log.Error().Err(err).Msg("ListOrders: failed to count total orders")
+		return nil, err
+	}
+	paging.Total = totalCount
+
+	return orders, nil
 }
 
 func (repo *OrderRepo) DeleteOrder(_ context.Context, id string) error {
