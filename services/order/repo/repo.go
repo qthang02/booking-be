@@ -81,26 +81,19 @@ func (repo *OrderRepo) FindOrder(_ context.Context, id int) (*enities.Order, err
 func (repo *OrderRepo) ListOrders(ctx context.Context, paging *request.Paging) ([]*enities.Order, error) {
 	var orders []*enities.Order
 
-	paging.Process()
-
-	offset := (paging.Page - 1) * paging.Limit
-
-	result := repo.db.WithContext(ctx).
-		Limit(paging.Limit).
-		Offset(offset).
-		Find(orders)
-
-	if result.Error != nil {
-		log.Error().Err(result.Error).Msg("ListOrders: failed to find orders")
-		return nil, result.Error
-	}
-
-	var totalCount int64
-	if err := repo.db.Model(&enities.Order{}).Count(&totalCount).Error; err != nil {
-		log.Error().Err(err).Msg("ListOrders: failed to count total orders")
+	err := repo.db.Find(&orders).Count(&paging.Total).Error
+	if err != nil {
+		log.Error().Msgf("ListOrders: failed to list orders: %v", err)
 		return nil, err
 	}
-	paging.Total = totalCount
+
+	repo.db = repo.db.Offset((paging.Page - 1) * paging.Limit)
+
+	err = repo.db.Order("id desc").Find(&orders).Limit(paging.Limit).Error
+	if err != nil {
+		log.Error().Msgf("RoomRepo.ListRooms limit error: %v", err)
+		return nil, err
+	}
 
 	return orders, nil
 }

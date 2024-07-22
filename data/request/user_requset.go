@@ -12,7 +12,7 @@ type CreateUserRequest struct {
 	Birthday *time.Time `json:"birthday"`
 	Gender   bool       `json:"gender"`
 	Address  string     `json:"address"`
-	Password string     `form:"password" binding:"required"`
+	Password string     `json:"password" binding:"required"`
 }
 
 type ListUsersRequest struct {

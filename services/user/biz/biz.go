@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/qthang02/booking/data/request"
 	"github.com/qthang02/booking/data/response"
+	"github.com/qthang02/booking/enities"
 	"github.com/qthang02/booking/services/user/repo"
 	"github.com/qthang02/booking/util"
 	"github.com/rs/zerolog/log"
@@ -25,10 +26,17 @@ func NewUserBiz(userRepo userrepo.IUserRepo, config *util.Config) *UserBiz {
 }
 
 func (biz *UserBiz) CreateUser(c echo.Context) error {
-	var user request.CreateUserRequest
+	var req request.CreateUserRequest
 
-	if err := c.Bind(&user); err != nil {
+	if err := c.Bind(&req); err != nil {
 		log.Error().Err(err).Msg("UserBiz.CreateUser failed to bind create user request")
+		return err
+	}
+
+	var user enities.User
+	err := copier.Copy(&user, &req)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.CreateUser failed to copy copy user")
 		return err
 	}
 
@@ -40,13 +48,13 @@ func (biz *UserBiz) CreateUser(c echo.Context) error {
 
 	user.Password = hashPassword
 
-	err = biz.userRepo.CreateUser(c.Request().Context(), &user)
+	err = biz.userRepo.Save(c.Request().Context(), &user)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.CreateUser cannot create user")
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, user)
+	return c.NoContent(http.StatusCreated)
 }
 
 func (biz *UserBiz) ListUsers(c echo.Context) error {
@@ -68,7 +76,7 @@ func (biz *UserBiz) ListUsers(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, "Failed to retrieve users")
 	}
 
-	var userDTOs response.UserDTOResponse
+	var userDTOs []*response.UserDTOResponse
 	err = copier.Copy(&userDTOs, &users)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.ListUsers: cannot copy users")
@@ -99,15 +107,19 @@ func (biz *UserBiz) GetUserById(c echo.Context) error {
 		return err
 	}
 
-	res := response.UserDTOResponse{}
-	err = copier.Copy(&res, user)
+	userDTO := response.UserDTOResponse{}
+	err = copier.Copy(&userDTO, user)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.GetUserById cannot copy user")
 		_ = c.JSON(http.StatusBadRequest, "")
 		return err
 	}
 
-	return c.JSON(http.StatusOK, res)
+	resp := response.ProfileResponse{
+		User: userDTO,
+	}
+
+	return c.JSON(http.StatusOK, resp)
 }
 
 func (biz *UserBiz) DeleteUserById(c echo.Context) error {
@@ -162,5 +174,5 @@ func (biz *UserBiz) UpdateUser(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, "")
+	return c.NoContent(http.StatusOK)
 }

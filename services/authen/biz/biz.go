@@ -57,6 +57,10 @@ func (biz *AuthenBiz) RegisterUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }
 
+type LoginResponse struct {
+	Token string `json:"token"`
+}
+
 func (biz *AuthenBiz) Login(c echo.Context) error {
 	log.Log().Msg("AuthenBiz.Login request")
 	var login request.LoginUserRequest
@@ -87,5 +91,10 @@ func (biz *AuthenBiz) Login(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, token)
+	var resp *LoginResponse
+
+	resp = &LoginResponse{
+		Token: token,
+	}
+	return c.JSON(http.StatusOK, resp)
 }

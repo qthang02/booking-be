@@ -66,25 +66,11 @@ func (repo *UserRepo) initUserDB() error {
 }
 
 func (repo *UserRepo) Save(_ context.Context, user *enities.User) error {
-	if err := repo.db.Save(user).Error; err != nil {
+	if err := repo.db.Create(user).Error; err != nil {
 		log.Error().Err(err).Msg("UserRepo.Save cannot save user")
 		return err
 	}
 	return nil
-}
-
-func (repo *UserRepo) CreateUser(_ context.Context, req *request.CreateUserRequest) error {
-	var data *enities.User
-
-	err := copier.Copy(data, req)
-	if err != nil {
-		log.Error().Err(err).Msgf("UserRepo.CreateUser copier.Copy failed err: %s with req: %v", err, req)
-		return err
-	}
-
-	resp := repo.db.Create(data)
-
-	return resp.Error
 }
 
 func (repo *UserRepo) FindByEmail(ctx context.Context, email string) (*enities.User, error) {
@@ -157,11 +143,9 @@ func (repo *UserRepo) DeleteUser(_ context.Context, id int) error {
 func (repo *UserRepo) ListUsers(ctx context.Context, paging *request.Paging) ([]*enities.User, error) {
 	var users []*enities.User
 
-	paging.Process()
-
 	offset := (paging.Page - 1) * paging.Limit
 
-	result := repo.db.WithContext(ctx).
+	result := repo.db.
 		Preload("Orders").
 		Limit(paging.Limit).
 		Offset(offset).
