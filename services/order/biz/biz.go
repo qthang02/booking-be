@@ -155,10 +155,7 @@ func (biz *OrderBiz) DeleteOrder(c echo.Context) error {
 func (biz *OrderBiz) ListOrders(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	paging := &request.Paging{
-		Page:  1,
-		Limit: 10,
-	}
+	paging := &request.Paging{}
 
 	if page, err := strconv.Atoi(c.QueryParam("page")); err == nil {
 		paging.Page = page
@@ -166,6 +163,8 @@ func (biz *OrderBiz) ListOrders(c echo.Context) error {
 	if limit, err := strconv.Atoi(c.QueryParam("limit")); err == nil {
 		paging.Limit = limit
 	}
+
+	paging.Process()
 
 	orders, err := biz.orderRepo.ListOrders(ctx, paging)
 	if err != nil {
