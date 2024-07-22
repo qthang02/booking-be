@@ -1,34 +1,33 @@
 package util
 
 import (
+	"fmt"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
+	"os"
+	"strconv"
 	"time"
 )
 
 type Config struct {
-	DBSource       string        `mapstructure:"DB_SOURCE"`
-	ServerAddress  string        `mapstructure:"SERVER_ADDRESS"`
-	TokenSecret    string        `mapstructure:"TOKEN_SECRET"`
-	TokenExpiresIn time.Duration `mapstructure:"TOKEN_EXPIRED_IN"`
-	TokenMaxAge    int           `mapstructure:"TOKEN_MAXAGE"`
+	DBSource       string
+	ServerAddress  string
+	TokenSecret    string
+	TokenExpiresIn time.Duration
+	TokenMaxAge    int
 }
 
-func LoadConfig(path string, logger zerolog.Logger) (config Config, err error) {
+func LoadConfig(logger zerolog.Logger) (config Config, err error) {
 	logger.Info().Timestamp().Msg("Loading config...")
 
-	viper.AddConfigPath(path)
-	viper.SetConfigFile(".env")
+	config.DBSource = fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_NAME"))
+	config.ServerAddress = os.Getenv("SERVER_ADDRESS")
+	config.TokenSecret = os.Getenv("TOKEN_SECRET")
+	config.TokenExpiresIn, _ = time.ParseDuration(os.Getenv("TOKEN_EXPIRED_IN"))
+	config.TokenMaxAge, _ = strconv.Atoi(os.Getenv("TOKEN_MAXAGE"))
 
-	viper.AutomaticEnv()
-
-	err = viper.ReadInConfig()
-	if err != nil {
-		log.Error().Err(err).Msg("Error reading config")
-		return
-	}
-
-	err = viper.Unmarshal(&config)
-	return
+	return config, nil
 }
