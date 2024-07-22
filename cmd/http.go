@@ -71,7 +71,7 @@ func Run() {
 		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 	}))
 	logger := zerolog.New(os.Stdout)
-	config, err := util.LoadConfig(".", logger)
+	config, err := util.LoadConfig(logger)
 	if err != nil {
 		logger.Error().Err(err).Msg("cannot load config")
 	}
