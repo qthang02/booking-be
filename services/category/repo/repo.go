@@ -73,18 +73,24 @@ func (repo *CategoryRepo) Save(_ context.Context, category *enities.Category) er
 
 func (repo *CategoryRepo) ListCategories(_ context.Context, paging *request.Paging) ([]*enities.Category, error) {
 	var categories []*enities.Category
+	var total int64
 
-	err := repo.db.Find(&categories).Count(&paging.Total).Error
+	query := repo.db.Model(&enities.Category{})
+
+	err := query.Count(&total).Error
 	if err != nil {
 		log.Error().Msgf("CategoryRepo.ListCategories cannot counting result err: %v", err)
 		return nil, err
 	}
 
-	repo.db = repo.db.Offset((paging.Page - 1) * paging.Limit)
+	paging.Total = total
 
-	err = repo.db.Order("id desc").Find(&categories).Limit(paging.Limit).Error
+	err = query.Offset((paging.Page - 1) * paging.Limit).
+		Limit(paging.Limit).
+		Order("id desc").
+		Find(&categories).Error
 	if err != nil {
-		log.Error().Msgf("CategoryRepo.ListCategories cannot limiting result err: %v", err)
+		log.Error().Msgf("CategoryRepo.ListCategories cannot fetch categories err: %v", err)
 		return nil, err
 	}
 

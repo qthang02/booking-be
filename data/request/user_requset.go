@@ -1,7 +1,6 @@
 package request
 
 import (
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -23,7 +22,6 @@ type GetUserRequest struct {
 }
 
 type UpdateUserRequest struct {
-	gorm.Model
 	Username string     `json:"username"`
 	Email    string     `json:"email"`
 	Phone    string     `json:"phone"`
