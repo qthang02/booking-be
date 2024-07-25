@@ -12,62 +12,60 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	userRepo *UserRepo
-)
-
 type UserRepo struct {
 	db *gorm.DB
 }
 
-func NewUserRepo(db *gorm.DB) IUserRepo {
-	userRepo = &UserRepo{}
+func NewUserRepo(db *gorm.DB) *UserRepo {
+	repo := &UserRepo{db: db}
 
 	err := db.AutoMigrate(&enities.User{})
 	if err != nil {
-		log.Error().Msgf("failed to auto migrate user database")
+		log.Error().Err(err).Msg("failed to auto migrate user database")
 		return nil
 	}
 
-	userRepo.db = db
-
-	err = userRepo.initUserDB()
+	err = repo.initUserDB()
 	if err != nil {
-		log.Error().Msgf("failed to init user database")
+		log.Error().Err(err).Msg("failed to init user database")
 		return nil
 	}
 
-	return userRepo
+	return repo
 }
 
 func (repo *UserRepo) initUserDB() error {
-	users, err := repo.ListUsers(context.Background(), &request.Paging{})
-	if err != nil {
-		log.Error().Msgf("initUserDB: failed to list users")
+	var count int64
+	if err := repo.db.Model(&enities.User{}).Count(&count).Error; err != nil {
+		log.Error().Err(err).Msg("initUserDB: failed to count users")
 		return err
 	}
 
-	if len(users) == 0 {
+	log.Info().Msgf("initUserDB: found %d existing users", count)
+
+	if count == 0 {
 		for _, user := range database.InitUsersDataDefault() {
-			user.Password, err = util.HashPassword(user.Password)
+			hashedPassword, err := util.HashPassword(user.Password)
 			if err != nil {
-				log.Error().Msgf("initUserDB: failed to hash password")
+				log.Error().Err(err).Msg("initUserDB: failed to hash password")
 				return err
 			}
-			err := repo.Save(context.Background(), user)
-			if err != nil {
-				log.Error().Msgf("initUserDB: failed to save user")
+			user.Password = hashedPassword
+
+			if err := repo.Save(context.Background(), user); err != nil {
+				log.Error().Err(err).Msg("initUserDB: failed to save user")
 				return err
 			}
 		}
+		log.Info().Msg("initUserDB: default users created")
 	}
 
 	return nil
 }
 
-func (repo *UserRepo) Save(_ context.Context, user *enities.User) error {
-	if err := repo.db.Create(user).Error; err != nil {
-		log.Error().Err(err).Msg("UserRepo.Save cannot save user")
+func (repo *UserRepo) Save(ctx context.Context, user *enities.User) error {
+	if err := repo.db.WithContext(ctx).Create(user).Error; err != nil {
+		log.Error().Err(err).Msg("UserRepo.Save: cannot save user")
 		return err
 	}
 	return nil
@@ -83,8 +81,8 @@ func (repo *UserRepo) FindByEmail(ctx context.Context, email string) (*enities.U
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Error().Err(err).Msgf("UserRepo.FindByEmail: User not found with email: %v", email)
-			return nil, err
+			log.Info().Msgf("UserRepo.FindByEmail: User not found with email: %v", email)
+			return nil, gorm.ErrRecordNotFound
 		}
 		log.Error().Err(err).Msgf("UserRepo.FindByEmail: Error fetching user with email: %v", email)
 		return nil, err
@@ -103,8 +101,8 @@ func (repo *UserRepo) FindByID(ctx context.Context, id int) (*enities.User, erro
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Error().Err(err).Msgf("UserRepo.FindByID: User not found with id: %v", id)
-			return nil, err
+			log.Info().Msgf("UserRepo.FindByID: User not found with id: %v", id)
+			return nil, gorm.ErrRecordNotFound
 		}
 		log.Error().Err(err).Msgf("UserRepo.FindByID: Error fetching user with id: %v", id)
 		return nil, err
@@ -113,28 +111,38 @@ func (repo *UserRepo) FindByID(ctx context.Context, id int) (*enities.User, erro
 	return &user, nil
 }
 
-func (repo *UserRepo) UpdateUser(_ context.Context, id int, req *request.UpdateUserRequest) error {
-
+func (repo *UserRepo) UpdateUser(ctx context.Context, id int, req *request.UpdateUserRequest) error {
 	var user enities.User
 
-	err := copier.Copy(&user, req)
-	if err != nil {
-		log.Error().Err(err).Msgf("UserRepo.UpdateUser cannot copy user requset err: %s with request: %v", err, req)
+	if err := copier.Copy(&user, req); err != nil {
+		log.Error().Err(err).Msgf("UserRepo.UpdateUser: cannot copy user request")
 		return err
 	}
 
-	if err := repo.db.Where(id).Updates(&user).Error; err != nil {
-		log.Error().Err(err).Msgf("UserRepo.UpdateUser User not found err: %s with id: %v", err, id)
-		return err
+	result := repo.db.WithContext(ctx).Model(&enities.User{}).Where("id = ?", id).Updates(&user)
+	if result.Error != nil {
+		log.Error().Err(result.Error).Msgf("UserRepo.UpdateUser: cannot update user")
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		log.Info().Msgf("UserRepo.UpdateUser: User not found with id: %v", id)
+		return gorm.ErrRecordNotFound
 	}
 
 	return nil
 }
 
-func (repo *UserRepo) DeleteUser(_ context.Context, id int) error {
-	if err := repo.db.Where("id = ?", id).Delete(&enities.User{}).Error; err != nil {
-		log.Error().Err(err).Msgf("UserRepo.DeleteUser cannot delete user requset err: %s with id: %v", err, id)
-		return err
+func (repo *UserRepo) DeleteUser(ctx context.Context, id int) error {
+	result := repo.db.WithContext(ctx).Delete(&enities.User{}, id)
+	if result.Error != nil {
+		log.Error().Err(result.Error).Msgf("UserRepo.DeleteUser: cannot delete user")
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		log.Info().Msgf("UserRepo.DeleteUser: User not found with id: %v", id)
+		return gorm.ErrRecordNotFound
 	}
 
 	return nil
@@ -145,7 +153,14 @@ func (repo *UserRepo) ListUsers(ctx context.Context, paging *request.Paging) ([]
 
 	offset := (paging.Page - 1) * paging.Limit
 
-	result := repo.db.
+	var totalCount int64
+	if err := repo.db.Model(&enities.User{}).Count(&totalCount).Error; err != nil {
+		log.Error().Err(err).Msg("UserRepo.ListUsers: failed to count total users")
+		return nil, err
+	}
+	paging.Total = totalCount
+
+	result := repo.db.WithContext(ctx).
 		Preload("Orders").
 		Limit(paging.Limit).
 		Offset(offset).
@@ -155,13 +170,6 @@ func (repo *UserRepo) ListUsers(ctx context.Context, paging *request.Paging) ([]
 		log.Error().Err(result.Error).Msg("UserRepo.ListUsers: failed to list users")
 		return nil, result.Error
 	}
-
-	var totalCount int64
-	if err := repo.db.Model(&enities.User{}).Count(&totalCount).Error; err != nil {
-		log.Error().Err(err).Msg("UserRepo.ListUsers: failed to count total users")
-		return nil, err
-	}
-	paging.Total = totalCount
 
 	return users, nil
 }

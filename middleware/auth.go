@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/qthang02/booking/util"
 	"net/http"
 	"strings"
 
@@ -20,23 +21,19 @@ func JWTAuth(secretKey string) echo.MiddlewareFunc {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Could not find bearer token in Authorization header"})
 			}
 
-			token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					return nil, echo.NewHTTPError(http.StatusUnauthorized, "Invalid token signing method")
-				}
-				return []byte(secretKey), nil
-			})
-
+			payload, err := util.ValidateToken(tokenString, secretKey)
 			if err != nil {
-				return c.JSON(http.StatusUnauthorized, map[string]string{"error": err.Error()})
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid token"})
 			}
 
-			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-				c.Set("user", claims)
-				return next(c)
+			userInfo, ok := payload.(map[string]interface{})
+			if !ok {
+				return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Invalid token payload"})
 			}
 
-			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid token"})
+			c.Set("user", userInfo)
+
+			return next(c)
 		}
 	}
 }

@@ -48,10 +48,13 @@ func (biz *RoomBiz) Get(c echo.Context) error {
 func (biz *RoomBiz) List(c echo.Context) error {
 	log.Info().Msgf("RoomBiz.List get room request")
 
-	var paging request.Paging
-	if err := c.Bind(&paging); err != nil {
-		log.Error().Msgf("RoomBiz.List room request error: %v, with requset: %v", err, paging)
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	paging := request.Paging{}
+
+	if page, err := strconv.Atoi(c.QueryParam("page")); err == nil {
+		paging.Page = page
+	}
+	if limit, err := strconv.Atoi(c.QueryParam("limit")); err == nil {
+		paging.Limit = limit
 	}
 
 	paging.Process()
@@ -101,7 +104,7 @@ func (biz *RoomBiz) Update(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.JSON(http.StatusOK, "Update successfully")
+	return c.NoContent(http.StatusOK)
 }
 
 func (biz *RoomBiz) Delete(c echo.Context) error {
@@ -129,7 +132,7 @@ func (biz *RoomBiz) Delete(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.JSON(http.StatusOK, "Delete successfully")
+	return c.NoContent(http.StatusOK)
 }
 
 func (biz *RoomBiz) Create(c echo.Context) error {
@@ -148,5 +151,5 @@ func (biz *RoomBiz) Create(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, "Create successfully")
+	return c.NoContent(http.StatusCreated)
 }

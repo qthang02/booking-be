@@ -2,6 +2,7 @@ package categoryrepo
 
 import (
 	"context"
+	"errors"
 	"github.com/jinzhu/copier"
 	"github.com/qthang02/booking/data/request"
 	"github.com/qthang02/booking/database"
@@ -10,161 +11,140 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	categoryRepo *CategoryRepo
-)
-
 type CategoryRepo struct {
 	db *gorm.DB
 }
 
-func NewCategoryRepo(db *gorm.DB) ICategoryRepo {
-	categoryRepo = &CategoryRepo{}
+func NewCategoryRepo(db *gorm.DB) *CategoryRepo {
+	repo := &CategoryRepo{db: db}
 
 	err := db.AutoMigrate(&enities.Category{})
 	if err != nil {
-		log.Error().Msgf("NewCategoryRepo: Error migrating category repo: %v", err)
+		log.Error().Err(err).Msg("NewCategoryRepo: Error migrating category repo")
 		return nil
 	}
 
-	categoryRepo.db = db
-
-	err = categoryRepo.initCategoryDB()
+	err = repo.initCategoryDB()
 	if err != nil {
-		log.Error().Msgf("NewCategoryRepo: Error migrating category repo: %v", err)
+		log.Error().Err(err).Msg("NewCategoryRepo: Error initializing category repo")
 		return nil
 	}
 
-	return categoryRepo
+	return repo
 }
 
 func (repo *CategoryRepo) initCategoryDB() error {
-	categories, err := repo.ListCategories(context.Background(), &request.Paging{
-		Limit: 10,
-		Page:  1,
-	})
-	if err != nil {
-		log.Error().Msgf("initCategoryDB: Error listing categories: %v", err)
+	var count int64
+	if err := repo.db.Model(&enities.Category{}).Count(&count).Error; err != nil {
+		log.Error().Err(err).Msg("initCategoryDB: Error counting categories")
 		return err
 	}
 
-	if len(categories) == 0 {
+	if count == 0 {
+		log.Info().Msg("initCategoryDB: No categories found, initializing default data")
 		for _, category := range database.InitCategoriesDataDefault() {
-			err := repo.Save(context.Background(), category)
-			if err != nil {
-				log.Error().Msgf("initCategoryDB: Error saving category: %v", err)
+			if err := repo.Save(context.Background(), category); err != nil {
+				log.Error().Err(err).Msg("initCategoryDB: Error saving category")
 				return err
 			}
 		}
+		log.Info().Msg("initCategoryDB: Default categories initialized successfully")
+	} else {
+		log.Info().Msgf("initCategoryDB: Found %d existing categories, skipping initialization", count)
 	}
 
 	return nil
 }
 
-func (repo *CategoryRepo) Save(_ context.Context, category *enities.Category) error {
-	err := repo.db.Save(category).Error
+func (repo *CategoryRepo) Save(ctx context.Context, category *enities.Category) error {
+	err := repo.db.WithContext(ctx).Save(category).Error
 	if err != nil {
-		log.Error().Msgf("CategoryRepo.Save: Error saving category: %v", err)
-		return err
+		log.Error().Err(err).Msg("CategoryRepo.Save: Error saving category")
 	}
-
-	return nil
+	return err
 }
 
-func (repo *CategoryRepo) ListCategories(_ context.Context, paging *request.Paging) ([]*enities.Category, error) {
+func (repo *CategoryRepo) ListCategories(ctx context.Context, paging *request.Paging) ([]*enities.Category, error) {
 	var categories []*enities.Category
-	var total int64
 
-	query := repo.db.Model(&enities.Category{})
+	query := repo.db.WithContext(ctx).Model(&enities.Category{})
 
-	err := query.Count(&total).Error
-	if err != nil {
-		log.Error().Msgf("CategoryRepo.ListCategories cannot counting result err: %v", err)
+	if err := query.Count(&paging.Total).Error; err != nil {
+		log.Error().Err(err).Msg("CategoryRepo.ListCategories: Error counting categories")
 		return nil, err
 	}
 
-	paging.Total = total
-
-	err = query.Offset((paging.Page - 1) * paging.Limit).
+	err := query.Offset((paging.Page - 1) * paging.Limit).
 		Limit(paging.Limit).
 		Order("id desc").
 		Find(&categories).Error
 	if err != nil {
-		log.Error().Msgf("CategoryRepo.ListCategories cannot fetch categories err: %v", err)
+		log.Error().Err(err).Msg("CategoryRepo.ListCategories: Error fetching categories")
 		return nil, err
 	}
 
 	return categories, nil
 }
 
-func (repo *CategoryRepo) GetCategory(_ context.Context, id int) (*enities.Category, error) {
-	log.Info().Msgf("CategoryRepo.GetCategory Getting category with id: %v", id)
-
+func (repo *CategoryRepo) GetCategory(ctx context.Context, id int) (*enities.Category, error) {
 	var category enities.Category
-	var rooms []enities.Room
 
-	query := "SELECT * FROM categories WHERE id = ?"
-	err := repo.db.Raw(query, id).Scan(&category).Error
+	err := repo.db.WithContext(ctx).Preload("Rooms").First(&category, id).Error
 	if err != nil {
-		log.Error().Msgf("CategoryRepo.GetCategory cannot find category err: %v with id: %v", err, id)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Info().Msgf("CategoryRepo.GetCategory: Category not found with id: %d", id)
+			return nil, gorm.ErrRecordNotFound
+		}
+		log.Error().Err(err).Msgf("CategoryRepo.GetCategory: Error fetching category with id: %d", id)
 		return nil, err
 	}
-
-	query = "SELECT * FROM rooms WHERE category_id = ?"
-	err = repo.db.Raw(query, id).Scan(&rooms).Error
-	if err != nil {
-		log.Error().Msgf("CategoryRepo.GetCategory cannot preload rooms err: %v with category_id: %v", err, id)
-		return nil, err
-	}
-
-	category.Rooms = rooms
 
 	return &category, nil
 }
 
-func (repo *CategoryRepo) DeleteCategory(_ context.Context, id int) error {
-	log.Info().Msgf("CategoryRepo.DeleteCategory Delete category with id: %v", id)
-	err := repo.db.Delete(&enities.Category{}, "id = ?", id).Error
-	if err != nil {
-		log.Error().Msgf("CategoryRepo.DeleteCategory cannot delete category err: %v with id: %v", err, id)
+func (repo *CategoryRepo) DeleteCategory(ctx context.Context, id int) error {
+	result := repo.db.WithContext(ctx).Delete(&enities.Category{}, id)
+	if result.Error != nil {
+		log.Error().Err(result.Error).Msgf("CategoryRepo.DeleteCategory: Error deleting category with id: %d", id)
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		log.Info().Msgf("CategoryRepo.DeleteCategory: Category not found with id: %d", id)
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (repo *CategoryRepo) CreateCategory(ctx context.Context, request *request.CreateCategoryRequest) error {
+	category := enities.Category{}
+	if err := copier.Copy(&category, request); err != nil {
+		log.Error().Err(err).Msg("CategoryRepo.CreateCategory: Error copying request")
+		return err
+	}
+
+	if err := repo.db.WithContext(ctx).Create(&category).Error; err != nil {
+		log.Error().Err(err).Msg("CategoryRepo.CreateCategory: Error creating category")
 		return err
 	}
 
 	return nil
 }
 
-func (repo *CategoryRepo) CreateCategory(_ context.Context, request *request.CreateCategoryRequest) error {
-	log.Info().Msgf("CategoryRepo.CreateCategory Create category request: %v", request)
-
+func (repo *CategoryRepo) UpdateCategory(ctx context.Context, id int, request *request.UpdateCategoryRequest) error {
 	category := enities.Category{}
-	err := copier.Copy(&category, request)
-	if err != nil {
-		log.Error().Msgf("CategoryRepo.CreateCategory cannot copy request: %v", err)
+	if err := copier.Copy(&category, request); err != nil {
+		log.Error().Err(err).Msg("CategoryRepo.UpdateCategory: Error copying request")
 		return err
 	}
 
-	err = repo.db.Create(&category).Error
-	if err != nil {
-		log.Error().Msgf("CategoryRepo.CreateCategory cannot create category err: %v with id: %v", err, category.ID)
-		return err
+	result := repo.db.WithContext(ctx).Model(&enities.Category{}).Where("id = ?", id).Updates(&category)
+	if result.Error != nil {
+		log.Error().Err(result.Error).Msgf("CategoryRepo.UpdateCategory: Error updating category with id: %d", id)
+		return result.Error
 	}
-
-	return nil
-}
-
-func (repo *CategoryRepo) UpdateCategory(_ context.Context, id int, request *request.UpdateCategoryRequest) error {
-	log.Info().Msgf("CategoryRepo.UpdateCategory Update category request: %v", request)
-	category := enities.Category{}
-	err := copier.Copy(&category, request)
-	if err != nil {
-		log.Error().Msgf("CategoryRepo.UpdateCategory cannot copy request: %v", err)
-		return err
-	}
-
-	err = repo.db.Where(id).Updates(&category).Error
-	if err != nil {
-		log.Error().Msgf("CategoryRepo.UpdateCategory cannot update category err: %v with id: %v", err, category.ID)
-		return err
+	if result.RowsAffected == 0 {
+		log.Info().Msgf("CategoryRepo.UpdateCategory: Category not found with id: %d", id)
+		return gorm.ErrRecordNotFound
 	}
 
 	return nil
