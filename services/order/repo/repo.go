@@ -7,7 +7,6 @@ import (
 	"github.com/qthang02/booking/data/request"
 	"github.com/qthang02/booking/database"
 	"github.com/qthang02/booking/enities"
-	"github.com/qthang02/booking/util"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
@@ -17,29 +16,27 @@ var (
 )
 
 type OrderRepo struct {
-	db     *gorm.DB
-	config *util.Config
+	db *gorm.DB
 }
 
-func NewOrderRepo(db *gorm.DB, config *util.Config) (*OrderRepo, error) {
+func NewOrderRepo(db *gorm.DB) *OrderRepo {
 	if db == nil {
-		return nil, errors.New("database connection is required")
+		return nil
 	}
 
 	repo := &OrderRepo{
-		db:     db,
-		config: config,
+		db: db,
 	}
 
 	if err := db.AutoMigrate(&enities.Order{}); err != nil {
-		return nil, fmt.Errorf("failed to migrate orders table: %w", err)
+		return nil
 	}
 
 	if err := repo.initOrderDB(); err != nil {
-		return nil, fmt.Errorf("failed to init orders table: %w", err)
+		return nil
 	}
 
-	return repo, nil
+	return repo
 }
 
 func (repo *OrderRepo) initOrderDB() error {
