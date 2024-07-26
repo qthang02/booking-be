@@ -78,6 +78,5 @@ func Run() {
 	services.Default(config)
 	setupHttpRoutes(server)
 
-	PORT := "8080"
-	server.Logger.Fatal(server.Start(fmt.Sprintf(":%s", PORT)))
+	server.Logger.Fatal(server.Start(fmt.Sprintf("%s", config.ServerAddress)))
 }

@@ -1,6 +1,7 @@
 package biz
 
 import (
+	"context"
 	"errors"
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
@@ -32,6 +33,12 @@ func (biz *AuthenBiz) RegisterUser(c echo.Context) error {
 		log.Error().Err(err).Msg("AuthenBiz.RegisterUser failed to parse request body")
 		_ = c.JSON(http.StatusBadRequest, "")
 		return err
+	}
+
+	err := biz.validateRegister(c.Request().Context(), &req)
+	if err != nil {
+		log.Error().Err(err).Msg("AuthenBiz.RegisterUser failed to validate request body")
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	var user enities.User
@@ -106,4 +113,18 @@ func (biz *AuthenBiz) Login(c echo.Context) error {
 
 	log.Info().Str("email", user.Email).Msg("User logged in successfully")
 	return c.JSON(http.StatusOK, resp)
+}
+
+func (biz *AuthenBiz) validateRegister(ctx context.Context, req *request.RegisterUserRequest) error {
+	user, err := biz.userRepo.FindByEmail(ctx, req.Email)
+	if err != nil {
+		log.Error().Err(err).Msg("AuthenBiz.validateRegister Failed to find user by email")
+		return err
+	}
+
+	if user != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "user with email already exists")
+	}
+
+	return nil
 }

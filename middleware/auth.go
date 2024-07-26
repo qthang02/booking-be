@@ -1,4 +1,4 @@
-package middleware
+package middlewarecustom
 
 import (
 	"github.com/qthang02/booking/util"

@@ -1,6 +1,7 @@
 package userbiz
 
 import (
+	"context"
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
 	"github.com/qthang02/booking/data/request"
@@ -33,8 +34,14 @@ func (biz *UserBiz) CreateUser(c echo.Context) error {
 		return err
 	}
 
+	err := biz.validateCreateUser(c.Request().Context(), &req)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.CreateUser failed to validate create user request")
+		return err
+	}
+
 	var user enities.User
-	err := copier.Copy(&user, &req)
+	err = copier.Copy(&user, &req)
 	if err != nil {
 		log.Error().Err(err).Msg("UserBiz.CreateUser failed to copy copy user")
 		return err
@@ -175,4 +182,18 @@ func (biz *UserBiz) UpdateUser(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+func (biz *UserBiz) validateCreateUser(ctx context.Context, req *request.CreateUserRequest) error {
+	user, err := biz.userRepo.FindByEmail(ctx, req.Email)
+	if err != nil {
+		log.Error().Err(err).Msg("UserBiz.validateCreateUser Failed to find user by email")
+		return err
+	}
+
+	if user != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "user with email already exists")
+	}
+
+	return nil
 }
