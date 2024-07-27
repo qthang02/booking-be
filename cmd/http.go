@@ -29,6 +29,15 @@ func setupHttpRoutes(server *echo.Echo, config util.Config) {
 			user.POST("", services.GetUserBiz().CreateUser)
 		}
 
+		employee := api.Group("/employee", middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin}))
+		{
+			employee.GET("/:id", services.GetEmployeeBiz().GetEmployeeById)
+			employee.PUT("/:id", services.GetEmployeeBiz().UpdateEmployee)
+			employee.GET("", services.GetEmployeeBiz().ListEmployees)
+			employee.DELETE("/:id", services.GetEmployeeBiz().DeleteEmployeeById)
+			employee.POST("", services.GetEmployeeBiz().CreateEmployee)
+		}
+
 		auth := api.Group("/auth")
 		{
 			auth.POST("/register", services.GetAuthenBiz().RegisterUser)

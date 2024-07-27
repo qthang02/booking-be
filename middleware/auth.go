@@ -31,9 +31,6 @@ func JWTAuth(secretKey string, accessibleRoles []string) echo.MiddlewareFunc {
 			}
 
 			userRole := fmt.Sprintf("%v", userInfo["role"])
-
-			fmt.Println(userRole)
-
 			if !hasPermission(userRole, accessibleRoles) {
 				return c.JSON(http.StatusUnauthorized, "Permission denied")
 			}

@@ -1,7 +1,6 @@
 package biz
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/jinzhu/copier"
@@ -37,10 +36,14 @@ func (biz *AuthenBiz) RegisterUser(c echo.Context) error {
 		return err
 	}
 
-	err := biz.validateRegister(c.Request().Context(), &req)
-	if err != nil {
-		log.Error().Err(err).Msg("AuthenBiz.RegisterUser failed to validate request body")
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	u, err := biz.userRepo.FindByEmail(c.Request().Context(), req.Email)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Error().Err(err).Msg("AuthenBiz.validateRegister Failed to find user by email")
+		return err
+	}
+
+	if u != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "user with email already exists")
 	}
 
 	var user enities.User
@@ -138,18 +141,4 @@ func (biz *AuthenBiz) Profile(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, userDTO)
-}
-
-func (biz *AuthenBiz) validateRegister(ctx context.Context, req *request.RegisterUserRequest) error {
-	user, err := biz.userRepo.FindByEmail(ctx, req.Email)
-	if err != nil {
-		log.Error().Err(err).Msg("AuthenBiz.validateRegister Failed to find user by email")
-		return err
-	}
-
-	if user != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "user with email already exists")
-	}
-
-	return nil
 }

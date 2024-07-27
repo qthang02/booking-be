@@ -1,7 +1,7 @@
 package userbiz
 
 import (
-	"context"
+	"errors"
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
 	"github.com/qthang02/booking/data/request"
@@ -10,6 +10,7 @@ import (
 	"github.com/qthang02/booking/services/user/repo"
 	"github.com/qthang02/booking/util"
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 )
@@ -34,10 +35,13 @@ func (biz *UserBiz) CreateUser(c echo.Context) error {
 		return err
 	}
 
-	err := biz.validateCreateUser(c.Request().Context(), &req)
-	if err != nil {
-		log.Error().Err(err).Msg("UserBiz.CreateUser failed to validate create user request")
+	u, err := biz.userRepo.FindByEmail(c.Request().Context(), req.Email)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Error().Err(err).Msg("UserBiz.validateCreateUser Failed to find user by email")
 		return err
+	}
+	if u != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "user with email already exists")
 	}
 
 	var user enities.User
@@ -54,6 +58,7 @@ func (biz *UserBiz) CreateUser(c echo.Context) error {
 	}
 
 	user.Password = hashPassword
+	user.Role = util.Customer
 
 	err = biz.userRepo.Save(c.Request().Context(), &user)
 	if err != nil {
@@ -170,6 +175,7 @@ func (biz *UserBiz) UpdateUser(c echo.Context) error {
 		_ = c.JSON(http.StatusBadRequest, "")
 		return err
 	}
+	userUpdateRequest.Role = util.Customer
 
 	err = biz.userRepo.UpdateUser(c.Request().Context(), id, &userUpdateRequest)
 	if err != nil {
@@ -178,18 +184,4 @@ func (biz *UserBiz) UpdateUser(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
-}
-
-func (biz *UserBiz) validateCreateUser(ctx context.Context, req *request.CreateUserRequest) error {
-	user, err := biz.userRepo.FindByEmail(ctx, req.Email)
-	if err != nil {
-		log.Error().Err(err).Msg("UserBiz.validateCreateUser Failed to find user by email")
-		return err
-	}
-
-	if user != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "user with email already exists")
-	}
-
-	return nil
 }
