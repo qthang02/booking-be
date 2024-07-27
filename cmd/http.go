@@ -20,7 +20,7 @@ func setupHttpRoutes(server *echo.Echo, config util.Config) {
 			return c.JSON(http.StatusOK, "I'm still alive")
 		})
 
-		user := api.Group("/user")
+		user := api.Group("/user", middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
 		{
 			user.GET("/:id", services.GetUserBiz().GetUserById)
 			user.PUT("/:id", services.GetUserBiz().UpdateUser)
@@ -33,34 +33,34 @@ func setupHttpRoutes(server *echo.Echo, config util.Config) {
 		{
 			auth.POST("/register", services.GetAuthenBiz().RegisterUser)
 			auth.POST("/login", services.GetAuthenBiz().Login)
-			auth.GET("/profile", services.GetAuthenBiz().Profile, middlewarecustom.JWTAuth(config.TokenSecret))
+			auth.GET("/profile", services.GetAuthenBiz().Profile, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Customer, util.Staff}))
 		}
 
 		category := api.Group("/category")
 		{
 			category.GET("/:id", services.GetCategoryBiz().Get)
 			category.GET("", services.GetCategoryBiz().List)
-			category.POST("", services.GetCategoryBiz().Create)
-			category.PUT("/:id", services.GetCategoryBiz().Update)
-			category.DELETE("/:id", services.GetCategoryBiz().Delete)
+			category.POST("", services.GetCategoryBiz().Create, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
+			category.PUT("/:id", services.GetCategoryBiz().Update, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
+			category.DELETE("/:id", services.GetCategoryBiz().Delete, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
 		}
 
 		room := api.Group("/room")
 		{
 			room.GET("/:id", services.GetRoomBiz().Get)
 			room.GET("", services.GetRoomBiz().List)
-			room.POST("", services.GetRoomBiz().Create)
-			room.PUT("/:id", services.GetRoomBiz().Update)
-			room.DELETE("/:id", services.GetRoomBiz().Delete)
+			room.POST("", services.GetRoomBiz().Create, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
+			room.PUT("/:id", services.GetRoomBiz().Update, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
+			room.DELETE("/:id", services.GetRoomBiz().Delete, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
 		}
 
 		order := api.Group("/order")
 		{
 			order.GET("/:id", services.GetOrderBiz().GetOrder)
 			order.GET("", services.GetOrderBiz().ListOrders)
-			order.POST("", services.GetOrderBiz().CreateOrder)
-			order.PUT("/:id", services.GetOrderBiz().UpdateOrder)
-			order.DELETE("/:id", services.GetOrderBiz().DeleteOrder)
+			order.POST("", services.GetOrderBiz().CreateOrder, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
+			order.PUT("/:id", services.GetOrderBiz().UpdateOrder, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
+			order.DELETE("/:id", services.GetOrderBiz().DeleteOrder, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
 		}
 	}
 }

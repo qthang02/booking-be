@@ -1,13 +1,14 @@
 package middlewarecustom
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/qthang02/booking/util"
 	"net/http"
 	"strings"
 )
 
-func JWTAuth(secretKey string) echo.MiddlewareFunc {
+func JWTAuth(secretKey string, accessibleRoles []string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			authHeader := c.Request().Header.Get("Authorization")
@@ -29,9 +30,27 @@ func JWTAuth(secretKey string) echo.MiddlewareFunc {
 				return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to parse user information"})
 			}
 
+			userRole := fmt.Sprintf("%v", userInfo["role"])
+
+			fmt.Println(userRole)
+
+			if !hasPermission(userRole, accessibleRoles) {
+				return c.JSON(http.StatusUnauthorized, "Permission denied")
+			}
+
 			c.Set(util.UserID, userInfo["email"])
 
 			return next(c)
 		}
 	}
+}
+
+func hasPermission(userRole string, accessibleRoles []string) bool {
+	for _, role := range accessibleRoles {
+		if userRole == role {
+			return true
+		}
+	}
+
+	return false
 }
