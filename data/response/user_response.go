@@ -18,7 +18,3 @@ type UserDTOResponse struct {
 	Orders    []OrderSummaryDTO `json:"orders,omitempty"`
 	Role      string            `json:"role,omitempty"`
 }
-
-type ProfileResponse struct {
-	User UserDTOResponse `json:"user"`
-}

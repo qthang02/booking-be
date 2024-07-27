@@ -12,13 +12,7 @@ type CreateUserRequest struct {
 	Gender   bool       `json:"gender"`
 	Address  string     `json:"address"`
 	Password string     `json:"password" binding:"required"`
-}
-
-type ListUsersRequest struct {
-}
-
-type GetUserRequest struct {
-	ID uint `json:"id" binding:"required"`
+	Role     string     `json:"role"`
 }
 
 type UpdateUserRequest struct {
@@ -29,4 +23,5 @@ type UpdateUserRequest struct {
 	Gender   bool       `json:"gender"`
 	Address  string     `json:"address"`
 	Password string     `json:"password"`
+	Role     string     `json:"role"`
 }
