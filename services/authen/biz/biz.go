@@ -3,9 +3,11 @@ package biz
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
 	"github.com/qthang02/booking/data/request"
+	"github.com/qthang02/booking/data/response"
 	"github.com/qthang02/booking/enities"
 	"github.com/qthang02/booking/services/user/repo"
 	"github.com/qthang02/booking/util"
@@ -95,13 +97,7 @@ func (biz *AuthenBiz) Login(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid credentials"})
 	}
 
-	tokenPayload := map[string]interface{}{
-		"user_id": user.ID,
-		"email":   user.Email,
-		"name":    user.Name,
-	}
-
-	token, err := util.GenerateToken(biz.config.TokenExpiresIn, tokenPayload, biz.config.TokenSecret)
+	token, err := util.GenerateToken(biz.config.TokenExpiresIn, user, biz.config.TokenSecret)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to generate token")
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to generate token"})
@@ -113,6 +109,34 @@ func (biz *AuthenBiz) Login(c echo.Context) error {
 
 	log.Info().Str("email", user.Email).Msg("User logged in successfully")
 	return c.JSON(http.StatusOK, resp)
+}
+
+func (biz *AuthenBiz) Profile(c echo.Context) error {
+	log.Info().Msg("AuthenBiz.Profile request")
+
+	value := c.Get(util.UserID)
+
+	if value == nil {
+		log.Info().Msg("AuthenBiz.Profile request has no profile")
+	}
+
+	email := fmt.Sprintf("%v", value)
+
+	user, err := biz.userRepo.FindByEmail(c.Request().Context(), email)
+	if err != nil {
+		log.Error().Err(err).Msg("AuthenBiz.Profile Failed to find user")
+		return err
+	}
+
+	userDTO := response.UserDTOResponse{}
+	err = copier.Copy(&userDTO, user)
+	if err != nil {
+		log.Error().Err(err).Msg("AuthenBiz.Profile cannot copy user")
+		_ = c.JSON(http.StatusBadRequest, "")
+		return err
+	}
+
+	return c.JSON(http.StatusOK, userDTO)
 }
 
 func (biz *AuthenBiz) validateRegister(ctx context.Context, req *request.RegisterUserRequest) error {

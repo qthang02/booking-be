@@ -3,22 +3,25 @@ package database
 import (
 	"github.com/qthang02/booking/enities"
 	"github.com/qthang02/booking/types"
+	"github.com/qthang02/booking/util"
 	"math/rand"
 	"time"
 )
 
 func InitUsersDataDefault() []*enities.User {
 	data := []*enities.User{
-		{Name: "Alice Johnson", Username: "alicej", Email: "alice@example.com", Phone: "123-456-7890", Birthday: randomBirthday(), Gender: true, Address: "123 Main St", Password: "123456"},
-		{Name: "Bob Smith", Username: "bobsmith", Email: "bob@example.com", Phone: "234-567-8901", Birthday: randomBirthday(), Gender: true, Address: "456 Elm St", Password: "123456"},
-		{Name: "Carol White", Username: "carolw", Email: "carol@example.com", Phone: "345-678-9012", Birthday: randomBirthday(), Gender: false, Address: "789 Oak St", Password: "123456"},
-		{Name: "David Brown", Username: "davidb", Email: "david@example.com", Phone: "456-789-0123", Birthday: randomBirthday(), Gender: true, Address: "101 Pine St", Password: "123456"},
-		{Name: "Eve Black", Username: "eveb", Email: "eve@example.com", Phone: "567-890-1234", Birthday: randomBirthday(), Gender: false, Address: "202 Maple St", Password: "123456"},
-		{Name: "Frank Green", Username: "frankg", Email: "frank@example.com", Phone: "678-901-2345", Birthday: randomBirthday(), Gender: true, Address: "303 Birch St", Password: "123456"},
-		{Name: "Grace Red", Username: "gracer", Email: "grace@example.com", Phone: "789-012-3456", Birthday: randomBirthday(), Gender: false, Address: "404 Cedar St", Password: "123456"},
-		{Name: "Henry Blue", Username: "henryb", Email: "henry@example.com", Phone: "890-123-4567", Birthday: randomBirthday(), Gender: true, Address: "505 Walnut St", Password: "123456"},
-		{Name: "Ivy Purple", Username: "ivyp", Email: "ivy@example.com", Phone: "901-234-5678", Birthday: randomBirthday(), Gender: false, Address: "606 Spruce St", Password: "123456"},
-		{Name: "Jack Gold", Username: "jackg", Email: "jack@example.com", Phone: "012-345-6789", Birthday: randomBirthday(), Gender: true, Address: "707 Fir St", Password: "123456"},
+		{Name: "Nguyen Quoc Thang", Username: "thangnq", Email: "thangnq1@vnpay.vn", Phone: "0947013683", Birthday: randomBirthday(), Gender: true, Address: "Quang Trung, Go Vap", Password: "admin@123456", Role: util.Admin},
+		{Name: "Le Trung Tin", Username: "tinle", Email: "lenguyen170804@gmail.com", Phone: "098113579", Birthday: randomBirthday(), Gender: true, Address: "Tan Binh", Password: "admin@123456", Role: util.Admin},
+		{Name: "Alice Johnson", Username: "alicej", Email: "alice@example.com", Phone: "123-456-7890", Birthday: randomBirthday(), Gender: true, Address: "123 Main St", Password: "123456", Role: util.Customer},
+		{Name: "Bob Smith", Username: "bobsmith", Email: "bob@example.com", Phone: "234-567-8901", Birthday: randomBirthday(), Gender: true, Address: "456 Elm St", Password: "123456", Role: util.Customer},
+		{Name: "Carol White", Username: "carolw", Email: "carol@example.com", Phone: "345-678-9012", Birthday: randomBirthday(), Gender: false, Address: "789 Oak St", Password: "123456", Role: util.Customer},
+		{Name: "David Brown", Username: "davidb", Email: "david@example.com", Phone: "456-789-0123", Birthday: randomBirthday(), Gender: true, Address: "101 Pine St", Password: "123456", Role: util.Customer},
+		{Name: "Eve Black", Username: "eveb", Email: "eve@example.com", Phone: "567-890-1234", Birthday: randomBirthday(), Gender: false, Address: "202 Maple St", Password: "123456", Role: util.Customer},
+		{Name: "Frank Green", Username: "frankg", Email: "frank@example.com", Phone: "678-901-2345", Birthday: randomBirthday(), Gender: true, Address: "303 Birch St", Password: "123456", Role: util.Customer},
+		{Name: "Grace Red", Username: "gracer", Email: "grace@example.com", Phone: "789-012-3456", Birthday: randomBirthday(), Gender: false, Address: "404 Cedar St", Password: "123456", Role: util.Customer},
+		{Name: "Henry Blue", Username: "henryb", Email: "henry@example.com", Phone: "890-123-4567", Birthday: randomBirthday(), Gender: true, Address: "505 Walnut St", Password: "123456", Role: util.Customer},
+		{Name: "Ivy Purple", Username: "ivyp", Email: "ivy@example.com", Phone: "901-234-5678", Birthday: randomBirthday(), Gender: false, Address: "606 Spruce St", Password: "123456", Role: util.Customer},
+		{Name: "Jack Gold", Username: "jackg", Email: "jack@example.com", Phone: "012-345-6789", Birthday: randomBirthday(), Gender: true, Address: "707 Fir St", Password: "123456", Role: util.Customer},
 	}
 
 	return data

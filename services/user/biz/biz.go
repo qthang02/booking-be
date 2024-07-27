@@ -122,11 +122,7 @@ func (biz *UserBiz) GetUserById(c echo.Context) error {
 		return err
 	}
 
-	resp := response.ProfileResponse{
-		User: userDTO,
-	}
-
-	return c.JSON(http.StatusOK, resp)
+	return c.JSON(http.StatusOK, userDTO)
 }
 
 func (biz *UserBiz) DeleteUserById(c echo.Context) error {

@@ -16,4 +16,5 @@ type User struct {
 	Address  string     `json:"address"`
 	Password string     `json:"password"`
 	Orders   []Order    `json:"orders" gorm:"foreignKey:UserID"`
+	Role     string     `json:"role"`
 }

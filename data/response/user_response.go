@@ -16,6 +16,7 @@ type UserDTOResponse struct {
 	CreatedAt time.Time         `json:"created_at"`
 	UpdatedAt time.Time         `json:"updated_at"`
 	Orders    []OrderSummaryDTO `json:"orders,omitempty"`
+	Role      string            `json:"role,omitempty"`
 }
 
 type ProfileResponse struct {

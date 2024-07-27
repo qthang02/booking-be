@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	middlewarecustom "github.com/qthang02/booking/middleware"
 	"github.com/qthang02/booking/services"
 	"github.com/qthang02/booking/util"
 	"github.com/rs/zerolog"
@@ -11,7 +12,7 @@ import (
 	"os"
 )
 
-func setupHttpRoutes(server *echo.Echo) {
+func setupHttpRoutes(server *echo.Echo, config util.Config) {
 
 	api := server.Group("/api/v1")
 	{
@@ -32,6 +33,7 @@ func setupHttpRoutes(server *echo.Echo) {
 		{
 			auth.POST("/register", services.GetAuthenBiz().RegisterUser)
 			auth.POST("/login", services.GetAuthenBiz().Login)
+			auth.GET("/profile", services.GetAuthenBiz().Profile, middlewarecustom.JWTAuth(config.TokenSecret))
 		}
 
 		category := api.Group("/category")
@@ -76,7 +78,7 @@ func Run() {
 		logger.Error().Err(err).Msg("cannot load config")
 	}
 	services.Default(config)
-	setupHttpRoutes(server)
+	setupHttpRoutes(server, config)
 
 	server.Logger.Fatal(server.Start(fmt.Sprintf("%s", config.ServerAddress)))
 }

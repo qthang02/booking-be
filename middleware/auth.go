@@ -1,11 +1,10 @@
 package middlewarecustom
 
 import (
+	"github.com/labstack/echo/v4"
 	"github.com/qthang02/booking/util"
 	"net/http"
 	"strings"
-
-	"github.com/labstack/echo/v4"
 )
 
 func JWTAuth(secretKey string) echo.MiddlewareFunc {
@@ -21,17 +20,16 @@ func JWTAuth(secretKey string) echo.MiddlewareFunc {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Could not find bearer token in Authorization header"})
 			}
 
-			payload, err := util.ValidateToken(tokenString, secretKey)
+			userInfo, err := util.ValidateToken(tokenString, secretKey)
 			if err != nil {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid token"})
 			}
 
-			userInfo, ok := payload.(map[string]interface{})
-			if !ok {
-				return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Invalid token payload"})
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to parse user information"})
 			}
 
-			c.Set("user", userInfo)
+			c.Set(util.UserID, userInfo["email"])
 
 			return next(c)
 		}
