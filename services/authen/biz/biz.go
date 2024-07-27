@@ -57,6 +57,7 @@ func (biz *AuthenBiz) RegisterUser(c echo.Context) error {
 	}
 
 	user.Password = hashPassword
+	user.Role = util.Customer
 
 	err = biz.userRepo.Save(c.Request().Context(), &user)
 	if err != nil {
