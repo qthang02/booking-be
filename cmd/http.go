@@ -71,6 +71,12 @@ func setupHttpRoutes(server *echo.Echo, config util.Config) {
 			order.PUT("/:id", services.GetOrderBiz().UpdateOrder, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
 			order.DELETE("/:id", services.GetOrderBiz().DeleteOrder, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
 		}
+
+		payment := api.Group("/payment")
+		{
+			payment.GET("/create-payment", services.GetPaymentBiz().CreatePaymentURL)
+			payment.GET("/vnpay-return", services.GetPaymentBiz().HandleVNPayReturn)
+		}
 	}
 }
 

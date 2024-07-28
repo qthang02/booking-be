@@ -8,6 +8,7 @@ import (
 	employeerepo "github.com/qthang02/booking/services/employee/repo"
 	"github.com/qthang02/booking/services/order/biz"
 	orderrepo "github.com/qthang02/booking/services/order/repo"
+	paymentbiz "github.com/qthang02/booking/services/payment/biz"
 	roombiz "github.com/qthang02/booking/services/room/biz"
 	"github.com/qthang02/booking/services/room/repo"
 	user "github.com/qthang02/booking/services/user/biz"
@@ -27,6 +28,7 @@ var (
 	roomBiz      *roombiz.RoomBiz
 	orderBiz     *orderbiz.OrderBiz
 	employeeBiz  *employeebiz.EmployeeBiz
+	paymentBiz   *paymentbiz.PaymentBiz
 )
 
 func Default(config util.Config) {
@@ -45,6 +47,7 @@ func Default(config util.Config) {
 	roomBiz = roombiz.NewRoomBiz(roomRepo, &config)
 	orderBiz = orderbiz.NewOrderBiz(orderRepo, &config)
 	employeeBiz = employeebiz.NewEmployeeBiz(employeeRepo, &config)
+	paymentBiz = paymentbiz.NewPaymentBiz()
 }
 
 func GetUserBiz() *user.UserBiz {
@@ -69,4 +72,8 @@ func GetOrderBiz() *orderbiz.OrderBiz {
 
 func GetEmployeeBiz() *employeebiz.EmployeeBiz {
 	return employeeBiz
+}
+
+func GetPaymentBiz() *paymentbiz.PaymentBiz {
+	return paymentBiz
 }
