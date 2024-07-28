@@ -50,7 +50,7 @@ func setupHttpRoutes(server *echo.Echo, config util.Config) {
 			category.GET("/:id", services.GetCategoryBiz().Get)
 			category.GET("", services.GetCategoryBiz().List)
 			category.POST("", services.GetCategoryBiz().Create, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
-			category.PUT("/:id", services.GetCategoryBiz().Update, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
+			category.PUT("/:id", services.GetCategoryBiz().Update, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff, util.Customer}))
 			category.DELETE("/:id", services.GetCategoryBiz().Delete, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
 		}
 
