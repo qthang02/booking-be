@@ -20,13 +20,13 @@ func setupHttpRoutes(server *echo.Echo, config util.Config) {
 			return c.JSON(http.StatusOK, "I'm still alive")
 		})
 
-		user := api.Group("/user", middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
+		user := api.Group("/user")
 		{
-			user.GET("/:id", services.GetUserBiz().GetUserById)
-			user.PUT("/:id", services.GetUserBiz().UpdateUser)
-			user.GET("", services.GetUserBiz().ListUsers)
-			user.DELETE("/:id", services.GetUserBiz().DeleteUserById)
-			user.POST("", services.GetUserBiz().CreateUser)
+			user.GET("/:id", services.GetUserBiz().GetUserById, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
+			user.PUT("/:id", services.GetUserBiz().UpdateUser, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff, util.Customer}))
+			user.GET("", services.GetUserBiz().ListUsers, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
+			user.DELETE("/:id", services.GetUserBiz().DeleteUserById, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
+			user.POST("", services.GetUserBiz().CreateUser, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
 		}
 
 		employee := api.Group("/employee", middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin}))
