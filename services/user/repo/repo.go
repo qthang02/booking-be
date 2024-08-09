@@ -162,6 +162,7 @@ func (repo *UserRepo) ListUsers(ctx context.Context, paging *request.Paging) ([]
 
 	result := repo.db.WithContext(ctx).
 		Preload("Orders").
+		Where("role = ?", "Customer").
 		Limit(paging.Limit).
 		Offset(offset).
 		Find(&users)

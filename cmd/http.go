@@ -50,7 +50,7 @@ func setupHttpRoutes(server *echo.Echo, config util.Config) {
 			category.GET("/:id", services.GetCategoryBiz().Get)
 			category.GET("", services.GetCategoryBiz().List)
 			category.POST("", services.GetCategoryBiz().Create, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
-			category.PUT("/:id", services.GetCategoryBiz().Update, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff, util.Customer}))
+			category.PUT("/:id", services.GetCategoryBiz().Update, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
 			category.DELETE("/:id", services.GetCategoryBiz().Delete, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
 		}
 
@@ -67,7 +67,7 @@ func setupHttpRoutes(server *echo.Echo, config util.Config) {
 		{
 			order.GET("/:id", services.GetOrderBiz().GetOrder)
 			order.GET("", services.GetOrderBiz().ListOrders)
-			order.POST("", services.GetOrderBiz().CreateOrder, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
+			order.POST("", services.GetOrderBiz().CreateOrder, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff, util.Customer}))
 			order.PUT("/:id", services.GetOrderBiz().UpdateOrder, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
 			order.DELETE("/:id", services.GetOrderBiz().DeleteOrder, middlewarecustom.JWTAuth(config.TokenSecret, []string{util.Admin, util.Staff}))
 		}

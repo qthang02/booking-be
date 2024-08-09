@@ -18,3 +18,11 @@ const (
 	Occupied
 	DueOut
 )
+
+type orderStatus int
+
+const (
+	Confirmed orderStatus = iota
+	Pending
+	Canceled
+)

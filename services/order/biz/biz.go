@@ -46,10 +46,6 @@ func (biz *OrderBiz) CreateOrder(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})
 	}
 
-	if err := validateCreateOrderRequest(req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
-	}
-
 	var order enities.Order
 	err := copier.Copy(&order, req)
 	if err != nil {
@@ -65,19 +61,6 @@ func (biz *OrderBiz) CreateOrder(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, order)
-}
-
-func validateCreateOrderRequest(req *request.CreateOrderRequest) error {
-	if req.GuestNumber == 0 {
-		return errors.New("guest number must be greater than 0")
-	}
-	if req.Price <= 0 {
-		return errors.New("price must be greater than 0")
-	}
-	if req.Checkin.After(req.Checkout) {
-		return errors.New("checkin date must be before checkout date")
-	}
-	return nil
 }
 
 func (biz *OrderBiz) UpdateOrder(c echo.Context) error {

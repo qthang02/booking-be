@@ -5,6 +5,7 @@ import (
 	"github.com/qthang02/booking/data/request"
 	"github.com/qthang02/booking/data/response"
 	categoryrepo "github.com/qthang02/booking/services/category/repo"
+	"github.com/qthang02/booking/types"
 	"github.com/qthang02/booking/util"
 	"github.com/rs/zerolog/log"
 	"net/http"
@@ -48,7 +49,13 @@ func (biz *CategoryBiz) List(c echo.Context) error {
 			log.Error().Msgf("CategoryBiz.List cannot get catogory error: %v with requset: %v", err, c.Request())
 			return err
 		}
-		category.AvailableRooms = int64(len(resp.Rooms))
+		for _, room := range resp.Rooms {
+			if room.Status == types.Ready {
+				category.Rooms = append(category.Rooms, room)
+			}
+		}
+
+		category.AvailableRooms = int64(len(category.Rooms))
 	}
 
 	resp := response.ListCategoriesResponse{
