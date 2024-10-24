@@ -48,12 +48,12 @@ func InitOrdersDataDefault() []*enities.Order {
 func InitCategoriesDataDefault() []*enities.Category {
 
 	data := []*enities.Category{
-		{Name: "Original Suite", Description: "Standard room with basic amenities", ImageLink: "link_to_original_image", Price: 100.0, AvailableRooms: 80, Type: types.ORIGINAL},
-		{Name: "VIP Suite 1", Description: "VIP room with premium services", ImageLink: "link_to_vip1_image", Price: 200.0, AvailableRooms: 50, Type: types.VIP1},
-		{Name: "VIP Suite 2", Description: "VIP room with extended premium services", ImageLink: "link_to_vip2_image", Price: 250.0, AvailableRooms: 25, Type: types.VIP2},
-		{Name: "Popular Room", Description: "Popular choice among guests", ImageLink: "link_to_popular_image", Price: 150.0, AvailableRooms: 100, Type: types.POPULAR},
-		{Name: "Separately Room", Description: "Private room for individual guests", ImageLink: "link_to_separately_image", Price: 180.0, AvailableRooms: 60, Type: types.SEPARATELY},
-		{Name: "Deluxe Suite", Description: "Luxurious room with deluxe amenities", ImageLink: "link_to_deluxe_image", Price: 300.0, AvailableRooms: 70, Type: types.DELUXE},
+		{Name: "Original Suite", Description: "Standard room with basic amenities", ImageLink: "https://dq5r178u4t83b.cloudfront.net/wp-content/uploads/sites/125/2021/08/11060441/deluxe_harbour_web.jpg", Price: 100.0, AvailableRooms: 80, Type: types.ORIGINAL},
+		{Name: "VIP Suite 1", Description: "VIP room with premium services", ImageLink: "https://assets.architecturaldigest.in/photos/65b2aecf269da4a0ee6c9b40/master/w_1600%2Cc_limit/atr.royalmansion-bedroom2-mr.jpg", Price: 200.0, AvailableRooms: 50, Type: types.VIP1},
+		{Name: "VIP Suite 2", Description: "VIP room with extended premium services", ImageLink: "https://media.cnn.com/api/v1/images/stellar/prod/140127103345-peninsula-shanghai-deluxe-mock-up.jpg?q=w_2226,h_1449,x_0,y_0,c_fill", Price: 250.0, AvailableRooms: 25, Type: types.VIP2},
+		{Name: "Popular Room", Description: "Popular choice among guests", ImageLink: "https://t3.ftcdn.net/jpg/06/19/00/08/360_F_619000872_AxiwLsfQqRHMkNxAbN4l5wg1MsPgBsmo.jpg", Price: 150.0, AvailableRooms: 100, Type: types.POPULAR},
+		{Name: "Separately Room", Description: "Private room for individual guests", ImageLink: "https://t4.ftcdn.net/jpg/00/14/15/07/360_F_14150707_69W44NWjFECm7BXhnPCwX79XNTOSqEGm.jpg", Price: 180.0, AvailableRooms: 60, Type: types.SEPARATELY},
+		{Name: "Deluxe Suite", Description: "Luxurious room with deluxe amenities", ImageLink: "https://www.cvent.com/sites/default/files/image/2021-10/hotel%20room%20with%20beachfront%20view.jpg", Price: 300.0, AvailableRooms: 70, Type: types.DELUXE},
 	}
 
 	return data
